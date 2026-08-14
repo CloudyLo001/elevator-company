@@ -301,7 +301,9 @@ export class App {
     // --- diorama culling ---
     const shaftView = this.viewMode === "shaft";
     for (const [story, holder] of w.dioramas) {
-      holder.visible = Math.abs(storyY(story) - state.cabY) < 30 || shaftView;
+      // Tight range: the foyer's generated walls are tall enough to poke up
+      // into the floor above if its room is left visible while travelling.
+      holder.visible = Math.abs(storyY(story) - state.cabY) < 5 || shaftView;
     }
 
     // --- mood ---
