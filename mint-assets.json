@@ -470,6 +470,64 @@
       },
       "thumbnailUrl": "public/assets/mint/elevator-cab/preview_image.webp"
     },
+    "foyer": {
+      "source": {
+        "manifestVersion": 1,
+        "kind": "asset",
+        "assetType": "model",
+        "assetId": "ks77ty4brq6bd6ad3d63ts4krd8ce3gr"
+      },
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mode": "local_files",
+      "artifacts": {
+        "original_glb": {
+          "artifactId": "original_glb",
+          "role": "canonical_model",
+          "format": "glb",
+          "contentType": "model/gltf-binary",
+          "filename": "open-front-reception-stage-rd8ce3gr-original.glb",
+          "localPath": "public/assets/mint/foyer/original_glb.glb",
+          "loaderHint": "gltf",
+          "byteSize": 740504,
+          "extensionsUsed": [],
+          "extensionsRequired": [],
+          "usesDraco": false,
+          "requiresDraco": false,
+          "usesMeshopt": false,
+          "requiresMeshopt": false,
+          "usesKtx2": false,
+          "requiresKtx2": false,
+          "unknownRequiredExtensions": []
+        },
+        "preview_image": {
+          "artifactId": "preview_image",
+          "role": "preview_image",
+          "format": "webp",
+          "contentType": "image/webp",
+          "filename": "open-front-reception-stage-rd8ce3gr-preview.webp",
+          "localPath": "public/assets/mint/foyer/preview_image.webp",
+          "loaderHint": "image",
+          "byteSize": 38996
+        }
+      },
+      "thumbnailUrl": "public/assets/mint/foyer/preview_image.webp"
+    },
     "landing": {
       "source": {
         "manifestVersion": 1,

@@ -319,9 +319,11 @@ export function buildWorld(assets: AssetMap): World {
   for (const stop of STOPS) {
     if (!stop.dioramaKey) continue;
     const model = assets.get(stop.dioramaKey);
-    if (!model && stop.dioramaKey === "landing") {
-      // PLACEHOLDER: bright lobby wall with a door aperture, standing in
-      // until the blocked Mint lobby generation completes.
+    if (stop.dioramaKey === "landing") {
+      // The lift bay itself is always procedural so its aperture lines up
+      // exactly with the cab doors. The room around it is the generated
+      // foyer when available, or a plain shell when it is not.
+      const foyer = assets.get("foyer");
       const holder = new THREE.Group();
       holder.position.set(0, storyY(stop.story), 0);
       const wallShape = new THREE.Shape();
@@ -399,44 +401,64 @@ export function buildWorld(assets: AssetMap): World {
       const LOBBY_MID = (LOBBY_BACK + LOBBY_FRONT) / 2;
       const CEIL_Y = 3.9;
 
-      const floor = new THREE.Mesh(
-        new THREE.BoxGeometry(24, 0.1, LOBBY_DEPTH),
-        // Matte tiled stone. A polished floor mirrors the environment at
-        // grazing angles and blows out the whole lower frame.
-        new THREE.MeshStandardMaterial({
-          color: 0xffffff,
-          map: (() => {
-            const tex = makeFloorTexture();
-            tex.repeat.set(24 / 2.6, LOBBY_DEPTH / 2.6);
-            return tex;
-          })(),
-          roughness: 0.78,
-          metalness: 0,
-        }),
-      );
-      // Sits a hair above the shaft slab so the two never z-fight.
-      floor.position.set(0, -0.03, LOBBY_MID);
-      holder.add(floor);
+      if (foyer) {
+        // Generated foyer: its open face is seated against the lift wall so
+        // the visitor stands inside the room looking toward the doors.
+        holder.add(foyer);
+        const room = new THREE.Box3().setFromObject(foyer);
+        foyer.position.z = -1.34 - room.max.z;
+        // Clear of the shaft slab, which also sits at y = 0 and would
+        // z-fight with the foyer's floor right in front of the doors.
+        foyer.position.y = 0.025;
+        // The generated room is open above its rear wall; cap the far end so
+        // the sky does not show through behind the planting.
+        const placed = new THREE.Box3().setFromObject(foyer);
+        const backWall = new THREE.Mesh(
+          new THREE.BoxGeometry(placed.max.x - placed.min.x + 1.5, CEIL_Y, 0.12),
+          new THREE.MeshStandardMaterial({ color: 0xd8cfc0, roughness: 0.9 }),
+        );
+        backWall.position.set(0, CEIL_Y / 2, placed.min.z + 0.4);
+        holder.add(backWall);
+      } else {
+        const floor = new THREE.Mesh(
+          new THREE.BoxGeometry(24, 0.1, LOBBY_DEPTH),
+          // Matte tiled stone. A polished floor mirrors the environment at
+          // grazing angles and blows out the whole lower frame.
+          new THREE.MeshStandardMaterial({
+            color: 0xffffff,
+            map: (() => {
+              const tex = makeFloorTexture();
+              tex.repeat.set(24 / 2.6, LOBBY_DEPTH / 2.6);
+              return tex;
+            })(),
+            roughness: 0.78,
+            metalness: 0,
+          }),
+        );
+        // Sits a hair above the shaft slab so the two never z-fight.
+        floor.position.set(0, -0.03, LOBBY_MID);
+        holder.add(floor);
 
-      // Close the room off: without an end wall and returns, the view out of
-      // the open cab doors runs straight past the lobby into empty sky.
-      const roomMat = new THREE.MeshStandardMaterial({
-        color: 0xb9b5ad,
-        roughness: 0.92,
-      });
-      const endWall = new THREE.Mesh(
-        new THREE.BoxGeometry(24, 3.95, 0.12),
-        roomMat,
-      );
-      endWall.position.set(0, 1.975, LOBBY_FRONT);
-      holder.add(endWall);
-      for (const sx of [-12, 12]) {
-        const side = new THREE.Mesh(
-          new THREE.BoxGeometry(0.12, 3.95, LOBBY_DEPTH),
+        // Close the room off: without an end wall and returns, the view out
+        // of the open cab doors runs straight past the lobby into empty sky.
+        const roomMat = new THREE.MeshStandardMaterial({
+          color: 0xb9b5ad,
+          roughness: 0.92,
+        });
+        const endWall = new THREE.Mesh(
+          new THREE.BoxGeometry(24, 3.95, 0.12),
           roomMat,
         );
-        side.position.set(sx, 1.975, LOBBY_MID);
-        holder.add(side);
+        endWall.position.set(0, 1.975, LOBBY_FRONT);
+        holder.add(endWall);
+        for (const sx of [-12, 12]) {
+          const side = new THREE.Mesh(
+            new THREE.BoxGeometry(0.12, 3.95, LOBBY_DEPTH),
+            roomMat,
+          );
+          side.position.set(sx, 1.975, LOBBY_MID);
+          holder.add(side);
+        }
       }
 
       const ceiling = new THREE.Mesh(
@@ -455,7 +477,7 @@ export function buildWorld(assets: AssetMap): World {
       const stripMat = new THREE.MeshStandardMaterial({
         color: 0xfff6e6,
         emissive: 0xfff0d8,
-        emissiveIntensity: 1.6,
+        emissiveIntensity: 0.55,
         roughness: 0.4,
       });
       for (let i = 0; i < 5; i++) {
@@ -470,13 +492,9 @@ export function buildWorld(assets: AssetMap): World {
         }
       }
 
-      // Office downlights washing the doors, plus fill down the approach.
-      for (const sx of [-1.7, 0, 1.7]) {
-        const spot = new THREE.SpotLight(0xfff4e2, 9, 9, 0.55, 0.65, 1.4);
-        spot.position.set(sx, 3.8, -2.1);
-        spot.target.position.set(sx * 0.7, 0, -1.5);
-        holder.add(spot, spot.target);
-      }
+      // No downlights aimed at the lift wall: they spill a hard glow under
+      // the indicator and across the door heads. The ceiling fills alone
+      // light this end of the room.
       for (let i = 0; i < 4; i++) {
         const z = -4.6 - i * 3.2;
         const fill = new THREE.PointLight(0xfff2e0, 2.0, 10, 1.8);
@@ -490,14 +508,14 @@ export function buildWorld(assets: AssetMap): World {
       // not inside the extrusion.
       const WALL_FACE = -1.4;
       const skirt = new THREE.Mesh(
-        new THREE.BoxGeometry(24, 0.16, 0.06),
-        new THREE.MeshStandardMaterial({ color: 0x6d6b67, roughness: 0.5 }),
+        new THREE.BoxGeometry(6, 0.11, 0.06),
+        new THREE.MeshStandardMaterial({ color: 0x54402e, roughness: 0.6 }),
       );
-      skirt.position.set(0, 0.08, WALL_FACE);
+      skirt.position.set(0, 0.055, WALL_FACE);
       holder.add(skirt);
       const panelMat = new THREE.MeshStandardMaterial({
-        color: 0xcac6be,
-        roughness: 0.65,
+        color: 0xd9d2c6,
+        roughness: 0.7,
       });
       for (const px of [-2.45, 2.45]) {
         const sidePanel = new THREE.Mesh(
@@ -507,72 +525,82 @@ export function buildWorld(assets: AssetMap): World {
         sidePanel.position.set(px, 1.66, WALL_FACE);
         holder.add(sidePanel);
       }
-      // Lobby contents. Kept clear of the centre line so the approach dolly
-      // and the view back out of the cab both stay unobstructed, while the
-      // frame still has something to read depth against.
-      const darkMat = new THREE.MeshStandardMaterial({
-        color: 0x4b4b49,
-        roughness: 0.6,
-        metalness: 0.15,
-      });
-      const stoneMat = new THREE.MeshStandardMaterial({
-        color: 0xa39c8e,
-        roughness: 0.75,
-      });
-      const leafMat = new THREE.MeshStandardMaterial({
-        color: 0x46614a,
-        roughness: 0.85,
-      });
+      // Plain-shell furnishings. The generated foyer ships its own reception
+      // desk, planting and seating, so these are only for the fallback room.
+      if (!foyer) {
+        const darkMat = new THREE.MeshStandardMaterial({
+          color: 0x4b4b49,
+          roughness: 0.6,
+          metalness: 0.15,
+        });
+        const stoneMat = new THREE.MeshStandardMaterial({
+          color: 0xa39c8e,
+          roughness: 0.75,
+        });
+        const leafMat = new THREE.MeshStandardMaterial({
+          color: 0x46614a,
+          roughness: 0.85,
+        });
 
-      const counter = new THREE.Mesh(
-        new THREE.BoxGeometry(4.6, 1.05, 0.75),
-        darkMat,
-      );
-      counter.position.set(-5.4, 0.52, -6.6);
-      holder.add(counter);
-      const counterTop = new THREE.Mesh(
-        new THREE.BoxGeometry(4.8, 0.07, 0.9),
-        stoneMat,
-      );
-      counterTop.position.set(-5.4, 1.08, -6.6);
-      holder.add(counterTop);
-      const backPanel = new THREE.Mesh(
-        new THREE.BoxGeometry(5.4, 2.5, 0.12),
-        stoneMat,
-      );
-      backPanel.position.set(-5.4, 1.25, -7.5);
-      holder.add(backPanel);
-
-      for (const pz of [-5.2, -9.4]) {
-        const pot = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.7, 0.7), darkMat);
-        pot.position.set(3.9, 0.35, pz);
-        holder.add(pot);
-        const foliage = new THREE.Mesh(
-          new THREE.SphereGeometry(0.62, 12, 10),
-          leafMat,
+        const counter = new THREE.Mesh(
+          new THREE.BoxGeometry(4.6, 1.05, 0.75),
+          darkMat,
         );
-        foliage.position.set(3.9, 1.16, pz);
-        foliage.scale.set(1, 1.25, 1);
-        holder.add(foliage);
-      }
+        counter.position.set(-5.4, 0.52, -6.6);
+        holder.add(counter);
+        const counterTop = new THREE.Mesh(
+          new THREE.BoxGeometry(4.8, 0.07, 0.9),
+          stoneMat,
+        );
+        counterTop.position.set(-5.4, 1.08, -6.6);
+        holder.add(counterTop);
+        const backPanel = new THREE.Mesh(
+          new THREE.BoxGeometry(5.4, 2.5, 0.12),
+          stoneMat,
+        );
+        backPanel.position.set(-5.4, 1.25, -7.5);
+        holder.add(backPanel);
 
-      const bench = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.12, 0.62), stoneMat);
-      bench.position.set(5.2, 0.44, -12.2);
-      holder.add(bench);
-      for (const bx of [4.25, 6.15]) {
-        const leg = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.38, 0.5), darkMat);
-        leg.position.set(bx, 0.19, -12.2);
-        holder.add(leg);
-      }
-
-      for (const cx of [-8.6, 8.6]) {
-        for (const cz of [-5.4, -11.2]) {
-          const column = new THREE.Mesh(
-            new THREE.BoxGeometry(0.55, 3.95, 0.55),
-            stoneMat,
+        for (const pz of [-5.2, -9.4]) {
+          const pot = new THREE.Mesh(
+            new THREE.BoxGeometry(0.7, 0.7, 0.7),
+            darkMat,
           );
-          column.position.set(cx, 1.975, cz);
-          holder.add(column);
+          pot.position.set(3.9, 0.35, pz);
+          holder.add(pot);
+          const foliage = new THREE.Mesh(
+            new THREE.SphereGeometry(0.62, 12, 10),
+            leafMat,
+          );
+          foliage.position.set(3.9, 1.16, pz);
+          foliage.scale.set(1, 1.25, 1);
+          holder.add(foliage);
+        }
+
+        const bench = new THREE.Mesh(
+          new THREE.BoxGeometry(2.4, 0.12, 0.62),
+          stoneMat,
+        );
+        bench.position.set(5.2, 0.44, -12.2);
+        holder.add(bench);
+        for (const bx of [4.25, 6.15]) {
+          const leg = new THREE.Mesh(
+            new THREE.BoxGeometry(0.12, 0.38, 0.5),
+            darkMat,
+          );
+          leg.position.set(bx, 0.19, -12.2);
+          holder.add(leg);
+        }
+
+        for (const cx of [-8.6, 8.6]) {
+          for (const cz of [-5.4, -11.2]) {
+            const column = new THREE.Mesh(
+              new THREE.BoxGeometry(0.55, 3.95, 0.55),
+              stoneMat,
+            );
+            column.position.set(cx, 1.975, cz);
+            holder.add(column);
+          }
         }
       }
 

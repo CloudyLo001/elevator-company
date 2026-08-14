@@ -29,7 +29,7 @@ const RULES: Record<string, NormalizeRule> = {
   "passenger-resident": { height: 1.62 },
   "passenger-server": { height: 1.68 },
   "passenger-evening": { height: 1.72 },
-  landing: { height: 4.4, rotY: Math.PI },
+  foyer: { width: 11, rotY: 0 },
   "diorama-hotel": { width: 4.4, rotY: 0 },
   "diorama-office": { width: 4.4, rotY: 0 },
   "diorama-apartment": { width: 4.4, rotY: 0 },

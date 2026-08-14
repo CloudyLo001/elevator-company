@@ -1,31 +1,31 @@
-﻿/**
+/**
  * Browser URLs for synchronized Mint assets.
- * Paths mirror mint-assets.json (public/ root maps to "/").
+ * Paths mirror mint-assets.json (public/ root maps to the deployment base).
  * Regenerated whenever `sync-mint-assets.mjs` runs - keep keys stable.
  */
 
-export interface ManifestEntry {
-  url: string;
+/** Resolve a public-root path against the deployment base (GitHub Pages). */
+function asset(path: string): string {
+  return `${import.meta.env.BASE_URL}${path}`.replace(/([^:])\/{2,}/g, "$1/");
 }
 
 export const MODEL_URLS: Record<string, string> = {
-  "elevator-cab": "/assets/mint/elevator-cab/original_glb.glb",
+  "elevator-cab": asset("assets/mint/elevator-cab/original_glb.glb"),
   // "door-panel" intentionally absent: two Mint door generations came back
-  // with baked-on ornament and further regens are credit-blocked; a plain
-  // procedural steel leaf stands in (see scene.ts).
-  tower: "/assets/mint/tower/original_glb.glb",
-  "passenger-bellhop": "/assets/mint/passenger-bellhop/original_glb.glb",
-  "passenger-guest": "/assets/mint/passenger-guest/original_glb.glb",
-  "passenger-worker-a": "/assets/mint/passenger-worker-a/original_glb.glb",
-  "passenger-worker-b": "/assets/mint/passenger-worker-b/original_glb.glb",
-  "passenger-resident": "/assets/mint/passenger-resident/original_glb.glb",
-  "passenger-server": "/assets/mint/passenger-server/original_glb.glb",
-  "passenger-evening": "/assets/mint/passenger-evening/original_glb.glb",
-  // "landing" intentionally absent: the bright lobby-wall generation is
-  // blocked on Mint billing; a placeholder wall renders until it lands.
-  "diorama-hotel": "/assets/mint/diorama-hotel/original_glb.glb",
-  "diorama-office": "/assets/mint/diorama-office/original_glb.glb",
-  "diorama-apartment": "/assets/mint/diorama-apartment/original_glb.glb",
-  "diorama-restaurant": "/assets/mint/diorama-restaurant/original_glb.glb",
-  "diorama-penthouse": "/assets/mint/diorama-penthouse/original_glb.glb",
+  // with baked-on ornament, so a plain procedural steel leaf stands in
+  // (see makeProceduralDoorLeaf in scene.ts).
+  tower: asset("assets/mint/tower/original_glb.glb"),
+  foyer: asset("assets/mint/foyer/original_glb.glb"),
+  "passenger-bellhop": asset("assets/mint/passenger-bellhop/original_glb.glb"),
+  "passenger-guest": asset("assets/mint/passenger-guest/original_glb.glb"),
+  "passenger-worker-a": asset("assets/mint/passenger-worker-a/original_glb.glb"),
+  "passenger-worker-b": asset("assets/mint/passenger-worker-b/original_glb.glb"),
+  "passenger-resident": asset("assets/mint/passenger-resident/original_glb.glb"),
+  "passenger-server": asset("assets/mint/passenger-server/original_glb.glb"),
+  "passenger-evening": asset("assets/mint/passenger-evening/original_glb.glb"),
+  "diorama-hotel": asset("assets/mint/diorama-hotel/original_glb.glb"),
+  "diorama-office": asset("assets/mint/diorama-office/original_glb.glb"),
+  "diorama-apartment": asset("assets/mint/diorama-apartment/original_glb.glb"),
+  "diorama-restaurant": asset("assets/mint/diorama-restaurant/original_glb.glb"),
+  "diorama-penthouse": asset("assets/mint/diorama-penthouse/original_glb.glb"),
 };
