@@ -30,7 +30,9 @@ export const STOPS: FloorStop[] = [
     product: "ELEVATE — VERTICAL TRANSIT SYSTEMS",
     kanji: "玄関",
     reading: "GENKAN",
-    mood: { sky: 0x494f4a, ambient: 0x9aa094, glow: 0xf3c877 },
+    // Warm pale backdrop: the ground floor is fully enclosed by the foyer,
+    // so this only shows through small gaps, where sage would read as a hole.
+    mood: { sky: 0xcfc7b8, ambient: 0x9aa094, glow: 0xf3c877 },
   },
   {
     story: 1,

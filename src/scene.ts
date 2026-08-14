@@ -417,7 +417,13 @@ export function buildWorld(assets: AssetMap): World {
           new THREE.BoxGeometry(placed.max.x - placed.min.x + 1.5, CEIL_Y, 0.12),
           new THREE.MeshStandardMaterial({ color: 0xd8cfc0, roughness: 0.9 }),
         );
-        backWall.position.set(0, CEIL_Y / 2, placed.min.z + 0.4);
+        // Keep it inside the ceiling's span, otherwise the sky shows in the
+        // strip between the ceiling's far edge and the wall.
+        backWall.position.set(
+          0,
+          CEIL_Y / 2,
+          Math.max(placed.min.z + 0.4, LOBBY_FRONT + 0.07),
+        );
         holder.add(backWall);
       } else {
         const floor = new THREE.Mesh(
