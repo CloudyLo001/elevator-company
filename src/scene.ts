@@ -30,7 +30,101 @@ export interface World {
   keyLight: THREE.DirectionalLight;
   buttonHits: THREE.Mesh[];
   buttonPanel: THREE.Group;
+  landingIndicator: THREE.Mesh | null;
   passengerRoots: Map<string, THREE.Group>;
+}
+
+/**
+ * Stone floor tiles. Perspective convergence of the grout lines is what
+ * actually makes a flat plane read as a floor.
+ */
+function makeFloorTexture(): THREE.CanvasTexture {
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = 512;
+  const ctx = canvas.getContext("2d")!;
+  ctx.fillStyle = "#9d9a93";
+  ctx.fillRect(0, 0, 512, 512);
+
+  // Faint veining so each tile is not perfectly uniform.
+  for (let i = 0; i < 700; i++) {
+    const g = 150 + Math.random() * 45;
+    ctx.fillStyle = `rgba(${g | 0}, ${(g - 3) | 0}, ${(g - 10) | 0}, 0.05)`;
+    ctx.beginPath();
+    ctx.ellipse(
+      Math.random() * 512,
+      Math.random() * 512,
+      6 + Math.random() * 46,
+      3 + Math.random() * 16,
+      Math.random() * Math.PI,
+      0,
+      Math.PI * 2,
+    );
+    ctx.fill();
+  }
+
+  // Four tiles per texture tile, with a darker recessed grout joint.
+  ctx.strokeStyle = "#7c7972";
+  ctx.lineWidth = 7;
+  ctx.beginPath();
+  ctx.moveTo(256, 0);
+  ctx.lineTo(256, 512);
+  ctx.moveTo(0, 256);
+  ctx.lineTo(512, 256);
+  ctx.moveTo(1, 0);
+  ctx.lineTo(1, 512);
+  ctx.moveTo(0, 1);
+  ctx.lineTo(512, 1);
+  ctx.stroke();
+  // Highlight along one side of each joint for a chamfered edge.
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.35)";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(261, 0);
+  ctx.lineTo(261, 512);
+  ctx.moveTo(0, 261);
+  ctx.lineTo(512, 261);
+  ctx.stroke();
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.anisotropy = 8;
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+/** Landing floor-indicator screen above the doors. */
+export function drawLandingIndicator(
+  world: World,
+  label: string,
+  dir: -1 | 0 | 1,
+): void {
+  const mesh = world.landingIndicator;
+  if (!mesh) return;
+  const canvas = mesh.userData.canvas as HTMLCanvasElement;
+  const ctx = canvas.getContext("2d")!;
+  ctx.fillStyle = "#0c0e0f";
+  ctx.fillRect(0, 0, 256, 96);
+  ctx.fillStyle = "#ffb257";
+  if (dir !== 0) {
+    const cy = 48;
+    ctx.beginPath();
+    if (dir > 0) {
+      ctx.moveTo(58, cy - 22);
+      ctx.lineTo(78, cy + 14);
+      ctx.lineTo(38, cy + 14);
+    } else {
+      ctx.moveTo(58, cy + 22);
+      ctx.lineTo(78, cy - 14);
+      ctx.lineTo(38, cy - 14);
+    }
+    ctx.closePath();
+    ctx.fill();
+  }
+  ctx.font = "700 58px 'Avenir Next', 'Segoe UI', sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(label, dir === 0 ? 128 : 152, 50);
+  (mesh.userData.texture as THREE.CanvasTexture).needsUpdate = true;
 }
 
 /** Plain brushed-steel sliding door leaf (placeholder for the Mint model). */
@@ -221,6 +315,7 @@ export function buildWorld(assets: AssetMap): World {
   // ---------- floor dioramas ----------
   const dioramas = new Map<number, THREE.Group>();
   const dioramaLights = new Map<number, THREE.PointLight>();
+  let landingIndicator: THREE.Mesh | null = null;
   for (const stop of STOPS) {
     if (!stop.dioramaKey) continue;
     const model = assets.get(stop.dioramaKey);
@@ -230,10 +325,10 @@ export function buildWorld(assets: AssetMap): World {
       const holder = new THREE.Group();
       holder.position.set(0, storyY(stop.story), 0);
       const wallShape = new THREE.Shape();
-      wallShape.moveTo(-6, 0);
-      wallShape.lineTo(6, 0);
-      wallShape.lineTo(6, 4.6);
-      wallShape.lineTo(-6, 4.6);
+      wallShape.moveTo(-12, 0);
+      wallShape.lineTo(12, 0);
+      wallShape.lineTo(12, 3.95);
+      wallShape.lineTo(-12, 3.95);
       wallShape.closePath();
       // Aperture slightly smaller than the door pair (±1.2 × 2.62) so the
       // wall overlaps the panels on every edge — no see-through gaps.
@@ -255,34 +350,232 @@ export function buildWorld(assets: AssetMap): World {
         metalness: 0.85,
         roughness: 0.3,
       });
-      const frame = new THREE.Mesh(new THREE.BoxGeometry(2.9, 0.12, 0.2), steelMat);
-      frame.position.set(0, 2.66, -1.18);
+      // Head casing and indicator sit proud of the wall's camera-facing
+      // plane (z = -1.38); anything behind it is hidden from the lobby.
+      const frame = new THREE.Mesh(new THREE.BoxGeometry(2.9, 0.14, 0.1), steelMat);
+      frame.position.set(0, 2.64, -1.43);
       holder.add(frame);
-      // Lit transom panel above the doors, like an office lift bay.
-      const transom = new THREE.Mesh(
-        new THREE.BoxGeometry(2.3, 0.62, 0.06),
+      for (const jx of [-1.42, 1.42]) {
+        const jamb = new THREE.Mesh(
+          new THREE.BoxGeometry(0.14, 2.72, 0.1),
+          steelMat,
+        );
+        jamb.position.set(jx, 1.35, -1.43);
+        holder.add(jamb);
+      }
+
+      // Floor indicator screen above the doors.
+      const housing = new THREE.Mesh(
+        new THREE.BoxGeometry(0.92, 0.38, 0.09),
         new THREE.MeshStandardMaterial({
-          color: 0xd9dde0,
-          emissive: 0xfff0d8,
-          emissiveIntensity: 1.5,
-          roughness: 0.5,
+          color: 0x22262a,
+          roughness: 0.45,
+          metalness: 0.4,
         }),
       );
-      transom.position.set(0, 3.12, -1.18);
-      holder.add(transom);
-      const transomFrame = new THREE.Mesh(
-        new THREE.BoxGeometry(2.46, 0.1, 0.14),
-        steelMat,
+      housing.position.set(0, 3.02, -1.43);
+      holder.add(housing);
+
+      const indicatorCanvas = document.createElement("canvas");
+      indicatorCanvas.width = 256;
+      indicatorCanvas.height = 96;
+      const indicatorTex = new THREE.CanvasTexture(indicatorCanvas);
+      indicatorTex.colorSpace = THREE.SRGBColorSpace;
+      const screen = new THREE.Mesh(
+        new THREE.PlaneGeometry(0.74, 0.26),
+        new THREE.MeshBasicMaterial({ map: indicatorTex, toneMapped: false }),
       );
-      transomFrame.position.set(0, 3.5, -1.18);
-      holder.add(transomFrame);
-      // Office downlights washing the wall and doors.
+      screen.position.set(0, 3.02, -1.481);
+      screen.rotation.y = Math.PI;
+      screen.userData.canvas = indicatorCanvas;
+      screen.userData.texture = indicatorTex;
+      holder.add(screen);
+      landingIndicator = screen;
+      // The visitor now starts well back from the doors, so the bay needs a
+      // real room around it: floor, ceiling and lighting down the approach.
+      const LOBBY_BACK = -1.26;
+      const LOBBY_FRONT = -17;
+      const LOBBY_DEPTH = LOBBY_BACK - LOBBY_FRONT;
+      const LOBBY_MID = (LOBBY_BACK + LOBBY_FRONT) / 2;
+      const CEIL_Y = 3.9;
+
+      const floor = new THREE.Mesh(
+        new THREE.BoxGeometry(24, 0.1, LOBBY_DEPTH),
+        // Matte tiled stone. A polished floor mirrors the environment at
+        // grazing angles and blows out the whole lower frame.
+        new THREE.MeshStandardMaterial({
+          color: 0xffffff,
+          map: (() => {
+            const tex = makeFloorTexture();
+            tex.repeat.set(24 / 2.6, LOBBY_DEPTH / 2.6);
+            return tex;
+          })(),
+          roughness: 0.78,
+          metalness: 0,
+        }),
+      );
+      // Sits a hair above the shaft slab so the two never z-fight.
+      floor.position.set(0, -0.03, LOBBY_MID);
+      holder.add(floor);
+
+      // Close the room off: without an end wall and returns, the view out of
+      // the open cab doors runs straight past the lobby into empty sky.
+      const roomMat = new THREE.MeshStandardMaterial({
+        color: 0xb9b5ad,
+        roughness: 0.92,
+      });
+      const endWall = new THREE.Mesh(
+        new THREE.BoxGeometry(24, 3.95, 0.12),
+        roomMat,
+      );
+      endWall.position.set(0, 1.975, LOBBY_FRONT);
+      holder.add(endWall);
+      for (const sx of [-12, 12]) {
+        const side = new THREE.Mesh(
+          new THREE.BoxGeometry(0.12, 3.95, LOBBY_DEPTH),
+          roomMat,
+        );
+        side.position.set(sx, 1.975, LOBBY_MID);
+        holder.add(side);
+      }
+
+      const ceiling = new THREE.Mesh(
+        new THREE.BoxGeometry(24, 0.12, LOBBY_DEPTH),
+        new THREE.MeshStandardMaterial({
+          color: 0xdedbd4,
+          roughness: 0.95,
+          emissive: 0x3a3833,
+          emissiveIntensity: 1,
+        }),
+      );
+      ceiling.position.set(0, CEIL_Y, LOBBY_MID);
+      holder.add(ceiling);
+
+      // Recessed ceiling strips receding toward the lift.
+      const stripMat = new THREE.MeshStandardMaterial({
+        color: 0xfff6e6,
+        emissive: 0xfff0d8,
+        emissiveIntensity: 1.6,
+        roughness: 0.4,
+      });
+      for (let i = 0; i < 5; i++) {
+        const z = -2.9 - i * 2.9;
+        for (const sx of [-3.1, 3.1]) {
+          const strip = new THREE.Mesh(
+            new THREE.BoxGeometry(2.4, 0.05, 0.34),
+            stripMat,
+          );
+          strip.position.set(sx, CEIL_Y - 0.09, z);
+          holder.add(strip);
+        }
+      }
+
+      // Office downlights washing the doors, plus fill down the approach.
       for (const sx of [-1.7, 0, 1.7]) {
-        const spot = new THREE.SpotLight(0xfff4e2, 16, 9, 0.55, 0.65, 1.4);
-        spot.position.set(sx, 4.3, -2.1);
+        const spot = new THREE.SpotLight(0xfff4e2, 9, 9, 0.55, 0.65, 1.4);
+        spot.position.set(sx, 3.8, -2.1);
         spot.target.position.set(sx * 0.7, 0, -1.5);
         holder.add(spot, spot.target);
       }
+      for (let i = 0; i < 4; i++) {
+        const z = -4.6 - i * 3.2;
+        const fill = new THREE.PointLight(0xfff2e0, 2.0, 10, 1.8);
+        fill.position.set(0, CEIL_Y - 0.4, z);
+        holder.add(fill);
+      }
+
+      // Wall detailing so the bay still reads as a lobby from a distance:
+      // stone skirting and a pair of darker panels flanking the doors.
+      // Detailing sits proud of the wall's camera-facing plane (z = -1.38),
+      // not inside the extrusion.
+      const WALL_FACE = -1.4;
+      const skirt = new THREE.Mesh(
+        new THREE.BoxGeometry(24, 0.16, 0.06),
+        new THREE.MeshStandardMaterial({ color: 0x6d6b67, roughness: 0.5 }),
+      );
+      skirt.position.set(0, 0.08, WALL_FACE);
+      holder.add(skirt);
+      const panelMat = new THREE.MeshStandardMaterial({
+        color: 0xcac6be,
+        roughness: 0.65,
+      });
+      for (const px of [-2.45, 2.45]) {
+        const sidePanel = new THREE.Mesh(
+          new THREE.BoxGeometry(1.6, 3.1, 0.05),
+          panelMat,
+        );
+        sidePanel.position.set(px, 1.66, WALL_FACE);
+        holder.add(sidePanel);
+      }
+      // Lobby contents. Kept clear of the centre line so the approach dolly
+      // and the view back out of the cab both stay unobstructed, while the
+      // frame still has something to read depth against.
+      const darkMat = new THREE.MeshStandardMaterial({
+        color: 0x4b4b49,
+        roughness: 0.6,
+        metalness: 0.15,
+      });
+      const stoneMat = new THREE.MeshStandardMaterial({
+        color: 0xa39c8e,
+        roughness: 0.75,
+      });
+      const leafMat = new THREE.MeshStandardMaterial({
+        color: 0x46614a,
+        roughness: 0.85,
+      });
+
+      const counter = new THREE.Mesh(
+        new THREE.BoxGeometry(4.6, 1.05, 0.75),
+        darkMat,
+      );
+      counter.position.set(-5.4, 0.52, -6.6);
+      holder.add(counter);
+      const counterTop = new THREE.Mesh(
+        new THREE.BoxGeometry(4.8, 0.07, 0.9),
+        stoneMat,
+      );
+      counterTop.position.set(-5.4, 1.08, -6.6);
+      holder.add(counterTop);
+      const backPanel = new THREE.Mesh(
+        new THREE.BoxGeometry(5.4, 2.5, 0.12),
+        stoneMat,
+      );
+      backPanel.position.set(-5.4, 1.25, -7.5);
+      holder.add(backPanel);
+
+      for (const pz of [-5.2, -9.4]) {
+        const pot = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.7, 0.7), darkMat);
+        pot.position.set(3.9, 0.35, pz);
+        holder.add(pot);
+        const foliage = new THREE.Mesh(
+          new THREE.SphereGeometry(0.62, 12, 10),
+          leafMat,
+        );
+        foliage.position.set(3.9, 1.16, pz);
+        foliage.scale.set(1, 1.25, 1);
+        holder.add(foliage);
+      }
+
+      const bench = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.12, 0.62), stoneMat);
+      bench.position.set(5.2, 0.44, -12.2);
+      holder.add(bench);
+      for (const bx of [4.25, 6.15]) {
+        const leg = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.38, 0.5), darkMat);
+        leg.position.set(bx, 0.19, -12.2);
+        holder.add(leg);
+      }
+
+      for (const cx of [-8.6, 8.6]) {
+        for (const cz of [-5.4, -11.2]) {
+          const column = new THREE.Mesh(
+            new THREE.BoxGeometry(0.55, 3.95, 0.55),
+            stoneMat,
+          );
+          column.position.set(cx, 1.975, cz);
+          holder.add(column);
+        }
+      }
+
       scene.add(holder);
       dioramas.set(stop.story, holder);
       continue;
@@ -504,6 +797,7 @@ export function buildWorld(assets: AssetMap): World {
     keyLight,
     buttonHits,
     buttonPanel: panelGroup,
+    landingIndicator,
     passengerRoots,
   };
 }

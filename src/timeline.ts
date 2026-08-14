@@ -29,6 +29,8 @@ export interface RideState {
   displayStory: number;
   /** 0..1 through the roof finale camera pull. */
   finale: number;
+  /** 0..1 walk across the lobby toward the closed doors, before boarding. */
+  approach: number;
   /** 0..1 walk-in + turn-around after the doors first open; 1 once aboard. */
   enter: number;
   /** True while the camera is still on the landing, outside the cab. */
@@ -41,8 +43,8 @@ export interface RideState {
 
 const DOOR_BEATS = 0.8;
 const DWELL_BEATS = 1.15;
-/** Standing on the landing, doors closed, title up. */
-const OUTSIDE_DWELL = 1.1;
+/** Approaching the lift across the lobby, doors closed, title up. */
+const OUTSIDE_DWELL = 1.9;
 /** Doors sliding open for boarding. */
 const INTRO_OPEN_BEATS = 0.8;
 /** Camera walks in and turns around. */
@@ -193,9 +195,10 @@ export function evaluate(p: number): RideState {
     atStop,
     displayStory: Math.max(0, Math.min(ROOF_STORY, Math.round(cabY / storyY(1)))),
     finale,
+    approach: clamp01(t / OUTSIDE_DWELL),
     enter,
     outside: enter <= 0,
-    introVisible: t < OUTSIDE_DWELL * 0.95,
+    introVisible: t < OUTSIDE_DWELL * 0.97,
     outroVisible: finale > 0.62,
     moodBlend,
   };

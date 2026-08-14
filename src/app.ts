@@ -6,11 +6,17 @@ import { STOPS, ROOF_STORY, storyY, type PassengerDef } from "./content";
 import { evaluate, progressForStopDwell, type RideState } from "./timeline";
 import { updatePassengers, passengerByKey } from "./passengers";
 import { Overlay } from "./overlay";
-import { DOOR_CLOSED_X, DOOR_OPEN_X } from "./scene";
+import { DOOR_CLOSED_X, DOOR_OPEN_X, drawLandingIndicator } from "./scene";
 
 const ROOF_Y = storyY(ROOF_STORY);
+const FINALE_LOOK_END = new THREE.Vector3(14, 118, 0);
 
 type ViewMode = "front" | "third" | "cctv" | "shaft";
+
+function smoothstep(u: number): number {
+  const c = THREE.MathUtils.clamp(u, 0, 1);
+  return c * c * (3 - 2 * c);
+}
 
 export class App {
   private renderer: THREE.WebGLRenderer;
@@ -30,6 +36,16 @@ export class App {
   private clock = new THREE.Clock();
   private lastState: RideState | null = null;
   private pressingButtons = new Set<THREE.Mesh>();
+  private doorsSmooth = 0;
+  private indicatorLabel = "";
+  private indicatorDir: -1 | 0 | 1 = 0;
+  // Damped camera state, held in cab-relative space (see frame()).
+  private camPos = new THREE.Vector3();
+  private camLook = new THREE.Vector3();
+  private camFov = 44;
+  private camReady = false;
+  private targetPos = new THREE.Vector3();
+  private targetLook = new THREE.Vector3();
   private skyfade: HTMLDivElement;
   private finaleCurve: THREE.CatmullRomCurve3;
   private cardOpenFor: string | null = null;
@@ -88,8 +104,12 @@ export class App {
     document.body.appendChild(this.skyfade);
 
     this.lenis = new Lenis({
-      duration: 1.35,
+      duration: 1.6,
+      easing: (t: number) => 1 - Math.pow(1 - t, 4),
       smoothWheel: true,
+      wheelMultiplier: 0.9,
+      syncTouch: true,
+      touchMultiplier: 1.5,
     });
 
     this.bindEvents();
@@ -193,7 +213,7 @@ export class App {
     const target = progressForStopDwell(story) * max;
     const distance = Math.abs(target - this.lenis.scroll);
     this.lenis.scrollTo(target, {
-      duration: Math.min(7, 1.2 + distance / 2600),
+      duration: Math.min(8, 1.6 + distance / 2400),
       easing: (u: number) =>
         u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2,
       lock: true,
@@ -210,18 +230,41 @@ export class App {
     const w = this.world;
 
     // --- cab & doors ---
+    const deltaY = state.cabY - this.prevCabY;
     this.speed = THREE.MathUtils.damp(
       this.speed,
-      Math.abs(state.cabY - this.prevCabY) / Math.max(dt, 1e-4),
+      Math.abs(deltaY) / Math.max(dt, 1e-4),
       6,
       dt,
     );
     this.prevCabY = state.cabY;
+
+    // Landing floor indicator tracks the car, like a real lobby display.
+    const indLabel =
+      state.finale > 0 || state.displayStory >= ROOF_STORY
+        ? "R"
+        : state.displayStory === 0
+          ? "G"
+          : String(state.displayStory);
+    const indDir: -1 | 0 | 1 =
+      deltaY > 0.002 ? 1 : deltaY < -0.002 ? -1 : 0;
+    if (indLabel !== this.indicatorLabel || indDir !== this.indicatorDir) {
+      this.indicatorLabel = indLabel;
+      this.indicatorDir = indDir;
+      drawLandingIndicator(w, indLabel, indDir);
+    }
     const swayAmp = THREE.MathUtils.clamp(this.speed / 40, 0, 1) * 0.02;
     const sway = Math.sin(timeMs * 0.013) * swayAmp;
     w.cabGroup.position.y = state.cabY + sway;
 
-    const doorX = DOOR_CLOSED_X + (DOOR_OPEN_X - DOOR_CLOSED_X) * state.doors;
+    this.doorsSmooth = THREE.MathUtils.damp(
+      this.doorsSmooth,
+      state.doors,
+      16,
+      dt,
+    );
+    const doorX =
+      DOOR_CLOSED_X + (DOOR_OPEN_X - DOOR_CLOSED_X) * this.doorsSmooth;
     w.doorL.position.x = -doorX;
     w.doorR.position.x = doorX;
 
@@ -298,20 +341,21 @@ export class App {
       light.visible = !finaleWorld;
     }
 
+    const tPos = this.targetPos;
+    const tLook = this.targetLook;
+    let tFov: number;
+
     if (state.finale > 0) {
       const u = state.finale;
       // sky flash masks the world swap at u≈0.25
       const flash = Math.max(0, 1 - Math.abs(u - 0.25) / 0.11);
       this.skyfade.style.opacity = String(flash * flash);
 
-      const pos = this.finaleCurve.getPoint(THREE.MathUtils.clamp(u, 0, 1));
-      this.camera.position.copy(pos);
-      const lookStart = new THREE.Vector3(0, ROOF_Y + 1.3, -5);
-      const lookEnd = new THREE.Vector3(14, 118, 0);
-      const look = lookStart.lerp(lookEnd, Math.min(1, u * 1.6));
-      this.camera.lookAt(look);
-      this.camera.fov = 44 + u * 6;
-      this.camera.updateProjectionMatrix();
+      this.finaleCurve.getPoint(THREE.MathUtils.clamp(u, 0, 1), tPos);
+      tLook
+        .set(0, ROOF_Y + 1.3, -5)
+        .lerp(FINALE_LOOK_END, Math.min(1, u * 1.6));
+      tFov = 44 + u * 6;
       if (w.scene.fog) {
         (w.scene.fog as THREE.Fog).near = 60;
         (w.scene.fog as THREE.Fog).far = 700;
@@ -323,39 +367,70 @@ export class App {
         (w.scene.fog as THREE.Fog).far = 110;
       }
       if (state.enter < 1) {
-        // Boarding: dolly in from the landing, then swing 180° into the
-        // active view. Pure function of state.enter — scrubs both ways.
-        const u = state.enter;
-        const target = this.viewCamera(
+        // Boarding: cross the lobby toward the closed doors, then step in and
+        // swing 180° into the active view. Pure function of scroll progress,
+        // so the whole sequence scrubs cleanly in both directions.
+        const view = this.viewCamera(
           this.viewMode === "shaft" ? "third" : this.viewMode,
           state,
           sway,
         );
-        const ease = u * u * (3 - 2 * u);
-        const pos = new THREE.Vector3(0, state.cabY + 1.5, -4.4).lerp(
-          target.pos,
-          ease,
+        const a = smoothstep(state.approach);
+        tPos.set(
+          0,
+          state.cabY + 1.66 - 0.14 * a,
+          THREE.MathUtils.lerp(-9.6, -4.2, a),
         );
+        const u = state.enter;
+        const ease = smoothstep(u);
+        tPos.lerp(view.pos, ease);
+
         const turn = THREE.MathUtils.clamp((u - 0.42) / 0.58, 0, 1);
-        const turnEase = turn * turn * (3 - 2 * turn);
+        const turnEase = smoothstep(turn);
         const theta = Math.PI * turnEase;
-        const swingLook = new THREE.Vector3(
-          pos.x + Math.sin(theta) * 3,
+        tLook.set(
+          tPos.x + Math.sin(theta) * 3,
           state.cabY + 1.45,
-          pos.z + Math.cos(theta) * 3,
+          tPos.z + Math.cos(theta) * 3,
         );
-        const look = swingLook.lerp(target.look, turnEase * turnEase);
-        this.camera.position.copy(pos);
-        this.camera.lookAt(look);
-        this.camera.fov = 55 + (target.fov - 55) * ease;
+        tLook.lerp(view.look, turnEase * turnEase);
+
+        const introFov = 47 + 9 * a;
+        tFov = introFov + (view.fov - introFov) * ease;
       } else {
         const view = this.viewCamera(this.viewMode, state, sway);
-        this.camera.position.copy(view.pos);
-        this.camera.lookAt(view.look);
-        this.camera.fov = view.fov;
+        tPos.copy(view.pos);
+        tLook.copy(view.look);
+        tFov = view.fov;
       }
-      this.camera.updateProjectionMatrix();
     }
+
+    // Damp the camera in cab-relative space: vertical travel stays locked to
+    // the car (no lag while riding), while boarding, view switches and the
+    // finale all ease instead of snapping.
+    const baseY = state.cabY;
+    if (!this.camReady) {
+      this.camPos.set(tPos.x, tPos.y - baseY, tPos.z);
+      this.camLook.set(tLook.x, tLook.y - baseY, tLook.z);
+      this.camFov = tFov;
+      this.camReady = true;
+    }
+    const lam = 13;
+    this.camPos.set(
+      THREE.MathUtils.damp(this.camPos.x, tPos.x, lam, dt),
+      THREE.MathUtils.damp(this.camPos.y, tPos.y - baseY, lam, dt),
+      THREE.MathUtils.damp(this.camPos.z, tPos.z, lam, dt),
+    );
+    this.camLook.set(
+      THREE.MathUtils.damp(this.camLook.x, tLook.x, lam, dt),
+      THREE.MathUtils.damp(this.camLook.y, tLook.y - baseY, lam, dt),
+      THREE.MathUtils.damp(this.camLook.z, tLook.z, lam, dt),
+    );
+    this.camFov = THREE.MathUtils.damp(this.camFov, tFov, lam, dt);
+    this.camera.position.set(this.camPos.x, this.camPos.y + baseY, this.camPos.z);
+    this.camera.lookAt(this.camLook.x, this.camLook.y + baseY, this.camLook.z);
+    this.camera.fov = this.camFov;
+    this.camera.updateProjectionMatrix();
 
     // --- picking ---
     this.lastState = state;

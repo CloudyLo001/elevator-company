@@ -134,7 +134,7 @@ export const PASSENGERS: PassengerDef[] = [
     story: "A birthday cake rides on the trolley. It must not tilt.",
     slot: [-0.62, 0.15],
     from: [-0.9, -2.6],
-    to: [0.8, -2.4],
+    to: [0.95, -2.05],
   },
   {
     key: "passenger-guest",
@@ -144,7 +144,7 @@ export const PASSENGERS: PassengerDef[] = [
     story: "Early for the interview, rehearsing her opening line.",
     slot: [0.6, 0.2],
     from: [0.9, -2.8],
-    to: [-0.7, -2.5],
+    to: [-1.55, -2.0],
   },
   {
     key: "passenger-worker-a",
@@ -153,8 +153,8 @@ export const PASSENGERS: PassengerDef[] = [
     exitStory: 43,
     story: "A lunch reservation he has no intention of losing.",
     slot: [0.62, -0.5],
-    from: [0.7, -2.5],
-    to: [-0.9, -2.6],
+    from: [1.35, -2.1],
+    to: [-1.8, -2.0],
   },
   {
     key: "passenger-worker-b",
@@ -163,8 +163,8 @@ export const PASSENGERS: PassengerDef[] = [
     exitStory: 60,
     story: "Pitching the penthouse client at three o'clock sharp.",
     slot: [-0.6, -0.55],
-    from: [-0.8, -2.7],
-    to: [0.9, -2.5],
+    from: [-0.75, -1.95],
+    to: [-1.3, -2.3],
   },
   {
     key: "passenger-resident",
@@ -173,8 +173,8 @@ export const PASSENGERS: PassengerDef[] = [
     exitStory: 60,
     story: "The rooftop garden is Mochi's favorite hour of the day.",
     slot: [0.05, -0.1],
-    from: [0.0, -2.6],
-    to: [-0.2, -2.8],
+    from: [-0.55, -2.3],
+    to: [-0.35, -2.6],
   },
   {
     key: "passenger-server",
@@ -184,7 +184,7 @@ export const PASSENGERS: PassengerDef[] = [
     story: "A tasting menu for the sixtieth floor, still warm.",
     slot: [-0.15, 0.45],
     from: [-0.4, -2.4],
-    to: [0.5, -2.6],
+    to: [0.4, -2.2],
   },
   {
     key: "passenger-evening",
@@ -193,8 +193,8 @@ export const PASSENGERS: PassengerDef[] = [
     exitStory: 60,
     story: "Floor 60. Home.",
     slot: [0.3, 0.55],
-    from: [1.1, -2.7],
-    to: [1.0, -2.4],
+    from: [1.75, -2.1],
+    to: [1.3, -2.5],
   },
 ];
 

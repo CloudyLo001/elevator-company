@@ -82,7 +82,7 @@ html, body {
   font-weight: 700;
   font-size: 20px;
   letter-spacing: 0.28em;
-  text-shadow: 0 1px 12px rgba(0,0,0,0.35);
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6), 0 4px 26px rgba(0, 0, 0, 0.45);
 }
 .floor-readout {
   position: absolute;
@@ -91,6 +91,7 @@ html, body {
   font-size: 11px;
   letter-spacing: 0.3em;
   opacity: 0.85;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6), 0 4px 26px rgba(0, 0, 0, 0.45);
 }
 #floor-number { font-size: 15px; font-weight: 700; letter-spacing: 0.18em; }
 .top-controls { pointer-events: auto; }
@@ -105,6 +106,7 @@ html, body {
   padding: 4px 0;
   border-bottom: 1px solid rgba(232, 228, 216, 0.5);
   transition: color 0.25s, border-color 0.25s;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6), 0 4px 26px rgba(0, 0, 0, 0.45);
 }
 .ctl:hover { color: var(--brass); border-color: var(--brass); }
 
@@ -149,7 +151,7 @@ html, body {
   opacity: 0;
   transition: opacity 0.5s ease, transform 0.5s ease;
   pointer-events: none;
-  text-shadow: 0 1px 14px rgba(0,0,0,0.3);
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6), 0 4px 26px rgba(0, 0, 0, 0.45);
 }
 .story.visible { opacity: 1; }
 .story-kicker { font-size: 10px; letter-spacing: 0.32em; color: var(--brass); margin-bottom: 12px; }
@@ -172,7 +174,7 @@ html, body {
   opacity: 0;
   transition: opacity 0.6s ease;
   pointer-events: none;
-  text-shadow: 0 2px 22px rgba(0,0,0,0.3);
+  text-shadow: 0 3px 8px rgba(0, 0, 0, 0.6), 0 6px 30px rgba(0, 0, 0, 0.45);
 }
 .kanji.visible { opacity: 0.92; }
 .kanji-reading {
@@ -200,6 +202,7 @@ html, body {
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.4s ease, transform 0.4s ease;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6), 0 4px 26px rgba(0, 0, 0, 0.45);
 }
 .hold-doors.available { opacity: 0.9; visibility: visible; transform: translate(-50%, 0); }
 .hd-glyph {
@@ -277,7 +280,7 @@ html, body {
   text-align: center;
   pointer-events: none;
   transition: opacity 0.5s ease;
-  text-shadow: 0 2px 18px rgba(0,0,0,0.35);
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6), 0 4px 26px rgba(0, 0, 0, 0.45);
 }
 .intro-kicker { font-size: 10px; letter-spacing: 0.42em; margin-bottom: 12px; opacity: 0.85; }
 .intro-title { font-family: var(--serif); font-size: clamp(48px, 8vw, 96px); letter-spacing: 0.24em; font-weight: 500; }
@@ -315,7 +318,7 @@ html, body {
   opacity: 0;
   transition: opacity 0.7s ease;
   pointer-events: none;
-  text-shadow: 0 2px 18px rgba(0,0,0,0.4);
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6), 0 4px 26px rgba(0, 0, 0, 0.45);
 }
 .outro.visible { opacity: 1; pointer-events: auto; }
 .outro-kicker { font-size: 9px; letter-spacing: 0.34em; opacity: 0.8; margin-bottom: 16px; }
