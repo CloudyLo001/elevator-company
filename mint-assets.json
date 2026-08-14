@@ -1,0 +1,996 @@
+{
+  "registryVersion": 1,
+  "mintProject": {
+    "projectId": "zd7a1p9yend4hjjcgsr5z346098cfbbv",
+    "name": "Elevate Elevator Site"
+  },
+  "assetRoot": "public/assets/mint",
+  "assets": {
+    "diorama-apartment": {
+      "source": {
+        "manifestVersion": 1,
+        "kind": "asset",
+        "assetType": "model",
+        "assetId": "ks74e7pkrmdn8wckce8w1020sd8cfcjk"
+      },
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mode": "local_files",
+      "artifacts": {
+        "original_glb": {
+          "artifactId": "original_glb",
+          "role": "canonical_model",
+          "format": "glb",
+          "contentType": "model/gltf-binary",
+          "filename": "apartment-corridor-sd8cfcjk-original.glb",
+          "localPath": "public/assets/mint/diorama-apartment/original_glb.glb",
+          "loaderHint": "gltf",
+          "byteSize": 530264,
+          "extensionsUsed": [],
+          "extensionsRequired": [],
+          "usesDraco": false,
+          "requiresDraco": false,
+          "usesMeshopt": false,
+          "requiresMeshopt": false,
+          "usesKtx2": false,
+          "requiresKtx2": false,
+          "unknownRequiredExtensions": []
+        },
+        "preview_image": {
+          "artifactId": "preview_image",
+          "role": "preview_image",
+          "format": "webp",
+          "contentType": "image/webp",
+          "filename": "apartment-corridor-sd8cfcjk-preview.webp",
+          "localPath": "public/assets/mint/diorama-apartment/preview_image.webp",
+          "loaderHint": "image",
+          "byteSize": 12976
+        }
+      },
+      "thumbnailUrl": "public/assets/mint/diorama-apartment/preview_image.webp"
+    },
+    "diorama-hotel": {
+      "source": {
+        "manifestVersion": 1,
+        "kind": "asset",
+        "assetType": "model",
+        "assetId": "ks74tc8b1g2xv3wqjfdxhbcesh8cfver"
+      },
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mode": "local_files",
+      "artifacts": {
+        "original_glb": {
+          "artifactId": "original_glb",
+          "role": "canonical_model",
+          "format": "glb",
+          "contentType": "model/gltf-binary",
+          "filename": "hotel-lobby-sh8cfver-original.glb",
+          "localPath": "public/assets/mint/diorama-hotel/original_glb.glb",
+          "loaderHint": "gltf",
+          "byteSize": 639616,
+          "extensionsUsed": [],
+          "extensionsRequired": [],
+          "usesDraco": false,
+          "requiresDraco": false,
+          "usesMeshopt": false,
+          "requiresMeshopt": false,
+          "usesKtx2": false,
+          "requiresKtx2": false,
+          "unknownRequiredExtensions": []
+        },
+        "preview_image": {
+          "artifactId": "preview_image",
+          "role": "preview_image",
+          "format": "webp",
+          "contentType": "image/webp",
+          "filename": "hotel-lobby-sh8cfver-preview.webp",
+          "localPath": "public/assets/mint/diorama-hotel/preview_image.webp",
+          "loaderHint": "image",
+          "byteSize": 24650
+        }
+      },
+      "thumbnailUrl": "public/assets/mint/diorama-hotel/preview_image.webp"
+    },
+    "diorama-office": {
+      "source": {
+        "manifestVersion": 1,
+        "kind": "asset",
+        "assetType": "model",
+        "assetId": "ks7fp99rexdx64zhr5fyrqfe3n8cey1w"
+      },
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mode": "local_files",
+      "artifacts": {
+        "original_glb": {
+          "artifactId": "original_glb",
+          "role": "canonical_model",
+          "format": "glb",
+          "contentType": "model/gltf-binary",
+          "filename": "corporate-office-3n8cey1w-original.glb",
+          "localPath": "public/assets/mint/diorama-office/original_glb.glb",
+          "loaderHint": "gltf",
+          "byteSize": 537848,
+          "extensionsUsed": [],
+          "extensionsRequired": [],
+          "usesDraco": false,
+          "requiresDraco": false,
+          "usesMeshopt": false,
+          "requiresMeshopt": false,
+          "usesKtx2": false,
+          "requiresKtx2": false,
+          "unknownRequiredExtensions": []
+        },
+        "preview_image": {
+          "artifactId": "preview_image",
+          "role": "preview_image",
+          "format": "webp",
+          "contentType": "image/webp",
+          "filename": "corporate-office-3n8cey1w-preview.webp",
+          "localPath": "public/assets/mint/diorama-office/preview_image.webp",
+          "loaderHint": "image",
+          "byteSize": 19222
+        }
+      },
+      "thumbnailUrl": "public/assets/mint/diorama-office/preview_image.webp"
+    },
+    "diorama-penthouse": {
+      "source": {
+        "manifestVersion": 1,
+        "kind": "asset",
+        "assetType": "model",
+        "assetId": "ks77kzzsfbh1dqacxndxpqj62d8cft88"
+      },
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mode": "local_files",
+      "artifacts": {
+        "original_glb": {
+          "artifactId": "original_glb",
+          "role": "canonical_model",
+          "format": "glb",
+          "contentType": "model/gltf-binary",
+          "filename": "penthouse-2d8cft88-original.glb",
+          "localPath": "public/assets/mint/diorama-penthouse/original_glb.glb",
+          "loaderHint": "gltf",
+          "byteSize": 639028,
+          "extensionsUsed": [],
+          "extensionsRequired": [],
+          "usesDraco": false,
+          "requiresDraco": false,
+          "usesMeshopt": false,
+          "requiresMeshopt": false,
+          "usesKtx2": false,
+          "requiresKtx2": false,
+          "unknownRequiredExtensions": []
+        },
+        "preview_image": {
+          "artifactId": "preview_image",
+          "role": "preview_image",
+          "format": "webp",
+          "contentType": "image/webp",
+          "filename": "penthouse-2d8cft88-preview.webp",
+          "localPath": "public/assets/mint/diorama-penthouse/preview_image.webp",
+          "loaderHint": "image",
+          "byteSize": 19360
+        }
+      },
+      "thumbnailUrl": "public/assets/mint/diorama-penthouse/preview_image.webp"
+    },
+    "diorama-restaurant": {
+      "source": {
+        "manifestVersion": 1,
+        "kind": "asset",
+        "assetType": "model",
+        "assetId": "ks767ygmkzzfjm8b1wg5esn6d18cer0a"
+      },
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mode": "local_files",
+      "artifacts": {
+        "original_glb": {
+          "artifactId": "original_glb",
+          "role": "canonical_model",
+          "format": "glb",
+          "contentType": "model/gltf-binary",
+          "filename": "restaurant-d18cer0a-original.glb",
+          "localPath": "public/assets/mint/diorama-restaurant/original_glb.glb",
+          "loaderHint": "gltf",
+          "byteSize": 761928,
+          "extensionsUsed": [],
+          "extensionsRequired": [],
+          "usesDraco": false,
+          "requiresDraco": false,
+          "usesMeshopt": false,
+          "requiresMeshopt": false,
+          "usesKtx2": false,
+          "requiresKtx2": false,
+          "unknownRequiredExtensions": []
+        },
+        "preview_image": {
+          "artifactId": "preview_image",
+          "role": "preview_image",
+          "format": "webp",
+          "contentType": "image/webp",
+          "filename": "restaurant-d18cer0a-preview.webp",
+          "localPath": "public/assets/mint/diorama-restaurant/preview_image.webp",
+          "loaderHint": "image",
+          "byteSize": 22662
+        }
+      },
+      "thumbnailUrl": "public/assets/mint/diorama-restaurant/preview_image.webp"
+    },
+    "diorama-vestibule": {
+      "source": {
+        "manifestVersion": 1,
+        "kind": "asset",
+        "assetType": "model",
+        "assetId": "ks7f40p7td8q2kehfhe9xze6f98ce90s"
+      },
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mode": "local_files",
+      "artifacts": {
+        "original_glb": {
+          "artifactId": "original_glb",
+          "role": "canonical_model",
+          "format": "glb",
+          "contentType": "model/gltf-binary",
+          "filename": "ground-vestibule-f98ce90s-original.glb",
+          "localPath": "public/assets/mint/diorama-vestibule/original_glb.glb",
+          "loaderHint": "gltf",
+          "byteSize": 710584,
+          "extensionsUsed": [],
+          "extensionsRequired": [],
+          "usesDraco": false,
+          "requiresDraco": false,
+          "usesMeshopt": false,
+          "requiresMeshopt": false,
+          "usesKtx2": false,
+          "requiresKtx2": false,
+          "unknownRequiredExtensions": []
+        },
+        "preview_image": {
+          "artifactId": "preview_image",
+          "role": "preview_image",
+          "format": "webp",
+          "contentType": "image/webp",
+          "filename": "ground-vestibule-f98ce90s-preview.webp",
+          "localPath": "public/assets/mint/diorama-vestibule/preview_image.webp",
+          "loaderHint": "image",
+          "byteSize": 20030
+        }
+      },
+      "thumbnailUrl": "public/assets/mint/diorama-vestibule/preview_image.webp"
+    },
+    "door-panel": {
+      "source": {
+        "manifestVersion": 1,
+        "kind": "asset",
+        "assetType": "model",
+        "assetId": "ks74x84ms4f9p8f3cfmd0gcsa58cemc0"
+      },
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mode": "local_files",
+      "artifacts": {
+        "original_glb": {
+          "artifactId": "original_glb",
+          "role": "canonical_model",
+          "format": "glb",
+          "contentType": "model/gltf-binary",
+          "filename": "brushed-steel-elevator-leaf-a58cemc0-original.glb",
+          "localPath": "public/assets/mint/door-panel/original_glb.glb",
+          "loaderHint": "gltf",
+          "byteSize": 688468,
+          "extensionsUsed": [],
+          "extensionsRequired": [],
+          "usesDraco": false,
+          "requiresDraco": false,
+          "usesMeshopt": false,
+          "requiresMeshopt": false,
+          "usesKtx2": false,
+          "requiresKtx2": false,
+          "unknownRequiredExtensions": []
+        },
+        "preview_image": {
+          "artifactId": "preview_image",
+          "role": "preview_image",
+          "format": "webp",
+          "contentType": "image/webp",
+          "filename": "brushed-steel-elevator-leaf-a58cemc0-preview.webp",
+          "localPath": "public/assets/mint/door-panel/preview_image.webp",
+          "loaderHint": "image",
+          "byteSize": 13704
+        }
+      },
+      "thumbnailUrl": "public/assets/mint/door-panel/preview_image.webp"
+    },
+    "elevator-cab": {
+      "source": {
+        "manifestVersion": 1,
+        "kind": "asset",
+        "assetType": "model",
+        "assetId": "ks7ekjcxvm4cj1fv9vhncb999x8ceb7t"
+      },
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mode": "local_files",
+      "artifacts": {
+        "original_glb": {
+          "artifactId": "original_glb",
+          "role": "canonical_model",
+          "format": "glb",
+          "contentType": "model/gltf-binary",
+          "filename": "open-frame-steel-cab-9x8ceb7t-original.glb",
+          "localPath": "public/assets/mint/elevator-cab/original_glb.glb",
+          "loaderHint": "gltf",
+          "byteSize": 581552,
+          "extensionsUsed": [],
+          "extensionsRequired": [],
+          "usesDraco": false,
+          "requiresDraco": false,
+          "usesMeshopt": false,
+          "requiresMeshopt": false,
+          "usesKtx2": false,
+          "requiresKtx2": false,
+          "unknownRequiredExtensions": []
+        },
+        "preview_image": {
+          "artifactId": "preview_image",
+          "role": "preview_image",
+          "format": "webp",
+          "contentType": "image/webp",
+          "filename": "open-frame-steel-cab-9x8ceb7t-preview.webp",
+          "localPath": "public/assets/mint/elevator-cab/preview_image.webp",
+          "loaderHint": "image",
+          "byteSize": 25316
+        }
+      },
+      "thumbnailUrl": "public/assets/mint/elevator-cab/preview_image.webp"
+    },
+    "landing": {
+      "source": {
+        "manifestVersion": 1,
+        "kind": "asset",
+        "assetType": "model",
+        "assetId": "ks706g576nvbfq77nbqh5xecm18ce7ne"
+      },
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mode": "local_files",
+      "artifacts": {
+        "original_glb": {
+          "artifactId": "original_glb",
+          "role": "canonical_model",
+          "format": "glb",
+          "contentType": "model/gltf-binary",
+          "filename": "minimal-steel-void-lobby-m18ce7ne-original.glb",
+          "localPath": "public/assets/mint/landing/original_glb.glb",
+          "loaderHint": "gltf",
+          "byteSize": 630304,
+          "extensionsUsed": [],
+          "extensionsRequired": [],
+          "usesDraco": false,
+          "requiresDraco": false,
+          "usesMeshopt": false,
+          "requiresMeshopt": false,
+          "usesKtx2": false,
+          "requiresKtx2": false,
+          "unknownRequiredExtensions": []
+        },
+        "preview_image": {
+          "artifactId": "preview_image",
+          "role": "preview_image",
+          "format": "webp",
+          "contentType": "image/webp",
+          "filename": "minimal-steel-void-lobby-m18ce7ne-preview.webp",
+          "localPath": "public/assets/mint/landing/preview_image.webp",
+          "loaderHint": "image",
+          "byteSize": 18570
+        }
+      },
+      "thumbnailUrl": "public/assets/mint/landing/preview_image.webp"
+    },
+    "passenger-bellhop": {
+      "source": {
+        "manifestVersion": 1,
+        "kind": "asset",
+        "assetType": "model",
+        "assetId": "ks75v86ns2hepgjk0s7sfk95en8ce4np"
+      },
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mode": "local_files",
+      "artifacts": {
+        "original_glb": {
+          "artifactId": "original_glb",
+          "role": "canonical_model",
+          "format": "glb",
+          "contentType": "model/gltf-binary",
+          "filename": "bellhop-en8ce4np-original.glb",
+          "localPath": "public/assets/mint/passenger-bellhop/original_glb.glb",
+          "loaderHint": "gltf",
+          "byteSize": 857376,
+          "extensionsUsed": [],
+          "extensionsRequired": [],
+          "usesDraco": false,
+          "requiresDraco": false,
+          "usesMeshopt": false,
+          "requiresMeshopt": false,
+          "usesKtx2": false,
+          "requiresKtx2": false,
+          "unknownRequiredExtensions": []
+        },
+        "preview_image": {
+          "artifactId": "preview_image",
+          "role": "preview_image",
+          "format": "webp",
+          "contentType": "image/webp",
+          "filename": "bellhop-en8ce4np-preview.webp",
+          "localPath": "public/assets/mint/passenger-bellhop/preview_image.webp",
+          "loaderHint": "image",
+          "byteSize": 32624
+        }
+      },
+      "thumbnailUrl": "public/assets/mint/passenger-bellhop/preview_image.webp"
+    },
+    "passenger-evening": {
+      "source": {
+        "manifestVersion": 1,
+        "kind": "asset",
+        "assetType": "model",
+        "assetId": "ks776a1k703qvksc2bbstjd1zd8cfwsh"
+      },
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mode": "local_files",
+      "artifacts": {
+        "original_glb": {
+          "artifactId": "original_glb",
+          "role": "canonical_model",
+          "format": "glb",
+          "contentType": "model/gltf-binary",
+          "filename": "penthouse-guest-zd8cfwsh-original.glb",
+          "localPath": "public/assets/mint/passenger-evening/original_glb.glb",
+          "loaderHint": "gltf",
+          "byteSize": 850972,
+          "extensionsUsed": [],
+          "extensionsRequired": [],
+          "usesDraco": false,
+          "requiresDraco": false,
+          "usesMeshopt": false,
+          "requiresMeshopt": false,
+          "usesKtx2": false,
+          "requiresKtx2": false,
+          "unknownRequiredExtensions": []
+        },
+        "preview_image": {
+          "artifactId": "preview_image",
+          "role": "preview_image",
+          "format": "webp",
+          "contentType": "image/webp",
+          "filename": "penthouse-guest-zd8cfwsh-preview.webp",
+          "localPath": "public/assets/mint/passenger-evening/preview_image.webp",
+          "loaderHint": "image",
+          "byteSize": 29460
+        }
+      },
+      "thumbnailUrl": "public/assets/mint/passenger-evening/preview_image.webp"
+    },
+    "passenger-guest": {
+      "source": {
+        "manifestVersion": 1,
+        "kind": "asset",
+        "assetType": "model",
+        "assetId": "ks7334sg6nw6zsc709zn4xs5rh8cfckd"
+      },
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mode": "local_files",
+      "artifacts": {
+        "original_glb": {
+          "artifactId": "original_glb",
+          "role": "canonical_model",
+          "format": "glb",
+          "contentType": "model/gltf-binary",
+          "filename": "hotel-guest-rh8cfckd-original.glb",
+          "localPath": "public/assets/mint/passenger-guest/original_glb.glb",
+          "loaderHint": "gltf",
+          "byteSize": 883212,
+          "extensionsUsed": [],
+          "extensionsRequired": [],
+          "usesDraco": false,
+          "requiresDraco": false,
+          "usesMeshopt": false,
+          "requiresMeshopt": false,
+          "usesKtx2": false,
+          "requiresKtx2": false,
+          "unknownRequiredExtensions": []
+        },
+        "preview_image": {
+          "artifactId": "preview_image",
+          "role": "preview_image",
+          "format": "webp",
+          "contentType": "image/webp",
+          "filename": "hotel-guest-rh8cfckd-preview.webp",
+          "localPath": "public/assets/mint/passenger-guest/preview_image.webp",
+          "loaderHint": "image",
+          "byteSize": 36508
+        }
+      },
+      "thumbnailUrl": "public/assets/mint/passenger-guest/preview_image.webp"
+    },
+    "passenger-resident": {
+      "source": {
+        "manifestVersion": 1,
+        "kind": "asset",
+        "assetType": "model",
+        "assetId": "ks7axxns726zv0bkmxh8wxby4d8cfgv5"
+      },
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mode": "local_files",
+      "artifacts": {
+        "original_glb": {
+          "artifactId": "original_glb",
+          "role": "canonical_model",
+          "format": "glb",
+          "contentType": "model/gltf-binary",
+          "filename": "resident-with-dog-4d8cfgv5-original.glb",
+          "localPath": "public/assets/mint/passenger-resident/original_glb.glb",
+          "loaderHint": "gltf",
+          "byteSize": 816840,
+          "extensionsUsed": [],
+          "extensionsRequired": [],
+          "usesDraco": false,
+          "requiresDraco": false,
+          "usesMeshopt": false,
+          "requiresMeshopt": false,
+          "usesKtx2": false,
+          "requiresKtx2": false,
+          "unknownRequiredExtensions": []
+        },
+        "preview_image": {
+          "artifactId": "preview_image",
+          "role": "preview_image",
+          "format": "webp",
+          "contentType": "image/webp",
+          "filename": "resident-with-dog-4d8cfgv5-preview.webp",
+          "localPath": "public/assets/mint/passenger-resident/preview_image.webp",
+          "loaderHint": "image",
+          "byteSize": 31210
+        }
+      },
+      "thumbnailUrl": "public/assets/mint/passenger-resident/preview_image.webp"
+    },
+    "passenger-server": {
+      "source": {
+        "manifestVersion": 1,
+        "kind": "asset",
+        "assetType": "model",
+        "assetId": "ks7bzhkd9dk34ar1rek69f3na98cen0n"
+      },
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mode": "local_files",
+      "artifacts": {
+        "original_glb": {
+          "artifactId": "original_glb",
+          "role": "canonical_model",
+          "format": "glb",
+          "contentType": "model/gltf-binary",
+          "filename": "restaurant-server-a98cen0n-original.glb",
+          "localPath": "public/assets/mint/passenger-server/original_glb.glb",
+          "loaderHint": "gltf",
+          "byteSize": 700888,
+          "extensionsUsed": [],
+          "extensionsRequired": [],
+          "usesDraco": false,
+          "requiresDraco": false,
+          "usesMeshopt": false,
+          "requiresMeshopt": false,
+          "usesKtx2": false,
+          "requiresKtx2": false,
+          "unknownRequiredExtensions": []
+        },
+        "preview_image": {
+          "artifactId": "preview_image",
+          "role": "preview_image",
+          "format": "webp",
+          "contentType": "image/webp",
+          "filename": "restaurant-server-a98cen0n-preview.webp",
+          "localPath": "public/assets/mint/passenger-server/preview_image.webp",
+          "loaderHint": "image",
+          "byteSize": 38952
+        }
+      },
+      "thumbnailUrl": "public/assets/mint/passenger-server/preview_image.webp"
+    },
+    "passenger-worker-a": {
+      "source": {
+        "manifestVersion": 1,
+        "kind": "asset",
+        "assetType": "model",
+        "assetId": "ks76vq0axf3e5nm0sv7f33t98n8cft9g"
+      },
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mode": "local_files",
+      "artifacts": {
+        "original_glb": {
+          "artifactId": "original_glb",
+          "role": "canonical_model",
+          "format": "glb",
+          "contentType": "model/gltf-binary",
+          "filename": "office-worker-a-8n8cft9g-original.glb",
+          "localPath": "public/assets/mint/passenger-worker-a/original_glb.glb",
+          "loaderHint": "gltf",
+          "byteSize": 625336,
+          "extensionsUsed": [],
+          "extensionsRequired": [],
+          "usesDraco": false,
+          "requiresDraco": false,
+          "usesMeshopt": false,
+          "requiresMeshopt": false,
+          "usesKtx2": false,
+          "requiresKtx2": false,
+          "unknownRequiredExtensions": []
+        },
+        "preview_image": {
+          "artifactId": "preview_image",
+          "role": "preview_image",
+          "format": "webp",
+          "contentType": "image/webp",
+          "filename": "office-worker-a-8n8cft9g-preview.webp",
+          "localPath": "public/assets/mint/passenger-worker-a/preview_image.webp",
+          "loaderHint": "image",
+          "byteSize": 35536
+        }
+      },
+      "thumbnailUrl": "public/assets/mint/passenger-worker-a/preview_image.webp"
+    },
+    "passenger-worker-b": {
+      "source": {
+        "manifestVersion": 1,
+        "kind": "asset",
+        "assetType": "model",
+        "assetId": "ks77vtpccbrc89ts9xxa42xvah8cemb5"
+      },
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mode": "local_files",
+      "artifacts": {
+        "original_glb": {
+          "artifactId": "original_glb",
+          "role": "canonical_model",
+          "format": "glb",
+          "contentType": "model/gltf-binary",
+          "filename": "office-worker-b-ah8cemb5-original.glb",
+          "localPath": "public/assets/mint/passenger-worker-b/original_glb.glb",
+          "loaderHint": "gltf",
+          "byteSize": 862640,
+          "extensionsUsed": [],
+          "extensionsRequired": [],
+          "usesDraco": false,
+          "requiresDraco": false,
+          "usesMeshopt": false,
+          "requiresMeshopt": false,
+          "usesKtx2": false,
+          "requiresKtx2": false,
+          "unknownRequiredExtensions": []
+        },
+        "preview_image": {
+          "artifactId": "preview_image",
+          "role": "preview_image",
+          "format": "webp",
+          "contentType": "image/webp",
+          "filename": "office-worker-b-ah8cemb5-preview.webp",
+          "localPath": "public/assets/mint/passenger-worker-b/preview_image.webp",
+          "loaderHint": "image",
+          "byteSize": 37124
+        }
+      },
+      "thumbnailUrl": "public/assets/mint/passenger-worker-b/preview_image.webp"
+    },
+    "tower": {
+      "source": {
+        "manifestVersion": 1,
+        "kind": "asset",
+        "assetType": "model",
+        "assetId": "ks7d57gn6ctwe6hm6fmks3347x8cf30s"
+      },
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "mode": "local_files",
+      "artifacts": {
+        "original_glb": {
+          "artifactId": "original_glb",
+          "role": "canonical_model",
+          "format": "glb",
+          "contentType": "model/gltf-binary",
+          "filename": "sage-tenshu-tower-7x8cf30s-original.glb",
+          "localPath": "public/assets/mint/tower/original_glb.glb",
+          "loaderHint": "gltf",
+          "byteSize": 860432,
+          "extensionsUsed": [],
+          "extensionsRequired": [],
+          "usesDraco": false,
+          "requiresDraco": false,
+          "usesMeshopt": false,
+          "requiresMeshopt": false,
+          "usesKtx2": false,
+          "requiresKtx2": false,
+          "unknownRequiredExtensions": []
+        },
+        "preview_image": {
+          "artifactId": "preview_image",
+          "role": "preview_image",
+          "format": "webp",
+          "contentType": "image/webp",
+          "filename": "sage-tenshu-tower-7x8cf30s-preview.webp",
+          "localPath": "public/assets/mint/tower/preview_image.webp",
+          "loaderHint": "image",
+          "byteSize": 50054
+        }
+      },
+      "thumbnailUrl": "public/assets/mint/tower/preview_image.webp"
+    }
+  }
+}
