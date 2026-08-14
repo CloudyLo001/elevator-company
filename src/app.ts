@@ -303,7 +303,7 @@ export class App {
     for (const [story, holder] of w.dioramas) {
       // Tight range: the foyer's generated walls are tall enough to poke up
       // into the floor above if its room is left visible while travelling.
-      holder.visible = Math.abs(storyY(story) - state.cabY) < 5 || shaftView;
+      holder.visible = Math.abs(storyY(story) - state.cabY) < 2.5 || shaftView;
     }
 
     // --- mood ---
