@@ -280,7 +280,10 @@ export class App {
     );
 
     // --- passengers ---
-    updatePassengers(state.t, state.cabY + sway, w.passengerRoots);
+    updatePassengers(state.t, state.cabY + sway, w.passengerRoots, {
+      cabOffset: w.cabFloorOffset,
+      storyTop: (story) => w.floorTops.get(story) ?? storyY(story),
+    });
 
     // --- dummy button press animation ---
     if (this.pressingButtons.size) {

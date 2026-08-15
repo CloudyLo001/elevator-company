@@ -11,6 +11,10 @@ const TOWER_HEIGHT = 256;
 export interface World {
   scene: THREE.Scene;
   cabGroup: THREE.Group;
+  /** Height of the cab's floor above the cab group's origin. */
+  cabFloorOffset: number;
+  /** World Y of each floor's walkable surface, keyed by story. */
+  floorTops: Map<number, number>;
   doorL: THREE.Group;
   doorR: THREE.Group;
   dioramas: Map<number, THREE.Group>;
@@ -84,6 +88,71 @@ function makeFloorTexture(): THREE.CanvasTexture {
   ctx.moveTo(0, 261);
   ctx.lineTo(512, 261);
   ctx.stroke();
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.anisotropy = 8;
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+/**
+ * Oak plank flooring. The generated foyer bakes its lighting into its own
+ * albedo, which reads as hard triangular wedges under our lights, so its
+ * floor is covered with a clean procedural one.
+ */
+function makeWoodFloorTexture(): THREE.CanvasTexture {
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = 512;
+  const ctx = canvas.getContext("2d")!;
+  const PLANKS = 4;
+  const w = 512 / PLANKS;
+
+  for (let i = 0; i < PLANKS; i++) {
+    const shade = 152 + Math.random() * 26;
+    ctx.fillStyle = `rgb(${shade | 0}, ${(shade - 26) | 0}, ${(shade - 62) | 0})`;
+    ctx.fillRect(i * w, 0, w, 512);
+
+    // Grain running along the plank.
+    for (let g = 0; g < 26; g++) {
+      const gy = Math.random() * 512;
+      ctx.strokeStyle = `rgba(${(shade - 34) | 0}, ${(shade - 58) | 0}, ${(shade - 86) | 0}, ${0.12 + Math.random() * 0.16})`;
+      ctx.lineWidth = 0.6 + Math.random() * 1.4;
+      ctx.beginPath();
+      ctx.moveTo(i * w + 3, gy);
+      ctx.bezierCurveTo(
+        i * w + w * 0.35, gy + (Math.random() - 0.5) * 16,
+        i * w + w * 0.7, gy + (Math.random() - 0.5) * 16,
+        i * w + w - 3, gy + (Math.random() - 0.5) * 10,
+      );
+      ctx.stroke();
+    }
+
+    // Plank seam plus a highlight on its far side.
+    ctx.strokeStyle = "rgba(60, 40, 24, 0.55)";
+    ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    ctx.moveTo(i * w + 0.5, 0);
+    ctx.lineTo(i * w + 0.5, 512);
+    ctx.stroke();
+    ctx.strokeStyle = "rgba(255, 236, 208, 0.22)";
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(i * w + 2.6, 0);
+    ctx.lineTo(i * w + 2.6, 512);
+    ctx.stroke();
+  }
+
+  // Staggered butt joints across the planks.
+  ctx.strokeStyle = "rgba(60, 40, 24, 0.5)";
+  ctx.lineWidth = 2;
+  for (let i = 0; i < PLANKS; i++) {
+    const jy = ((i * 137) % 512);
+    ctx.beginPath();
+    ctx.moveTo(i * w, jy);
+    ctx.lineTo(i * w + w, jy);
+    ctx.stroke();
+  }
 
   const tex = new THREE.CanvasTexture(canvas);
   tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
@@ -425,6 +494,25 @@ export function buildWorld(assets: AssetMap): World {
           Math.max(placed.min.z + 0.4, LOBBY_FRONT + 0.07),
         );
         holder.add(backWall);
+
+        // Clean oak floor laid over the generated one, whose baked shading
+        // shows as hard wedges once our own lights fall on it.
+        const deckBack = -1.34;
+        const deckFront = Math.max(placed.min.z, LOBBY_FRONT);
+        const deckDepth = deckBack - deckFront;
+        const deckWidth = placed.max.x - placed.min.x - 0.25;
+        const woodTex = makeWoodFloorTexture();
+        woodTex.repeat.set(deckWidth / 0.92, deckDepth / 2.6);
+        const deck = new THREE.Mesh(
+          new THREE.BoxGeometry(deckWidth, 0.05, deckDepth),
+          new THREE.MeshStandardMaterial({
+            map: woodTex,
+            roughness: 0.72,
+            metalness: 0,
+          }),
+        );
+        deck.position.set(0, 0.045, (deckBack + deckFront) / 2);
+        holder.add(deck);
       } else {
         const floor = new THREE.Mesh(
           new THREE.BoxGeometry(24, 0.1, LOBBY_DEPTH),
@@ -809,9 +897,58 @@ export function buildWorld(assets: AssetMap): World {
     passengerRoots.set(def.key, root);
   }
 
+  // Measure walkable surfaces. Generated rooms carry their own floor slabs,
+  // so a passenger placed at the story's origin stands buried up to the
+  // ankles; sample each room and the cab for the real standing height.
+  scene.updateMatrixWorld(true);
+  const probe = new THREE.Raycaster();
+  const DOWN = new THREE.Vector3(0, -1, 0);
+  const origin = new THREE.Vector3();
+  function surfaceY(
+    target: THREE.Object3D,
+    baseY: number,
+    samples: [number, number][],
+  ): number {
+    // Per sample take the topmost floor-height surface (skipping ceilings and
+    // handrails, and ignoring the slab's underside); across samples take the
+    // lowest, so a probe that landed on a desk or bench is discarded.
+    let best = Number.POSITIVE_INFINITY;
+    for (const [sx, sz] of samples) {
+      probe.set(origin.set(sx, baseY + 3.2, sz), DOWN);
+      let top = Number.NEGATIVE_INFINITY;
+      for (const hit of probe.intersectObject(target, true)) {
+        const dy = hit.point.y - baseY;
+        if (dy >= -0.06 && dy < 0.6) top = Math.max(top, hit.point.y);
+      }
+      if (Number.isFinite(top)) best = Math.min(best, top);
+    }
+    return Number.isFinite(best) ? best : baseY;
+  }
+
+  const cabFloorOffset =
+    surfaceY(cabGroup, 0, [
+      [0, 0],
+      [0.6, -0.4],
+      [-0.6, 0.3],
+    ]) - 0;
+
+  const floorTops = new Map<number, number>();
+  for (const [story, holder] of dioramas) {
+    floorTops.set(
+      story,
+      surfaceY(holder, storyY(story), [
+        [0, -2.8],
+        [1.4, -3.4],
+        [-1.4, -3.4],
+      ]),
+    );
+  }
+
   return {
     scene,
     cabGroup,
+    cabFloorOffset,
+    floorTops,
     doorL,
     doorR,
     dioramas,

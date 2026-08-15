@@ -61,10 +61,18 @@ function lerpAngle(a: number, b: number, u: number): number {
 
 const BOB_FREQ = 8.5;
 
+export interface FloorHeights {
+  /** Cab floor height above the cab group's origin. */
+  cabOffset: number;
+  /** World Y of a story's walkable surface. */
+  storyTop: (story: number) => number;
+}
+
 export function updatePassengers(
   t: number,
   cabY: number,
   roots: Map<string, THREE.Group>,
+  floors: FloorHeights,
 ): void {
   for (const c of choreos) {
     const root = roots.get(c.def.key);
@@ -74,48 +82,57 @@ export function updatePassengers(
     const [fx, fz] = def.from;
     const [tx, tz] = def.to;
 
+    // Stand on the surface that is actually drawn, not the story origin.
+    const boardFloor = floors.storyTop(def.boardStory);
+    const exitFloor = floors.storyTop(def.exitStory);
+    const cabFloor = cabY + floors.cabOffset;
+
     let x: number, y: number, z: number, yaw: number;
     let bob = 0;
+    let walking = false;
 
     if (t < c.boardStart) {
       // Waiting in the origin diorama, facing the landing doors.
       x = fx;
       z = fz;
-      y = c.boardY;
+      y = boardFloor;
       yaw = 0;
     } else if (t < c.boardEnd) {
       const u = smooth((t - c.boardStart) / (c.boardEnd - c.boardStart));
       x = fx + (sx - fx) * u;
       z = fz + (sz - fz) * u;
-      y = c.boardY;
+      y = boardFloor + (cabFloor - boardFloor) * u;
       yaw = walkYaw(sx - fx, sz - fz);
       bob = Math.sin(u * Math.PI * BOB_FREQ) * 0.02;
+      walking = true;
     } else if (t < c.turnEnd) {
       // The classic elevator about-face after stepping in.
       const u = smooth((t - c.boardEnd) / (c.turnEnd - c.boardEnd));
       x = sx;
       z = sz;
-      y = cabY;
+      y = cabFloor;
       yaw = lerpAngle(walkYaw(sx - fx, sz - fz), FACE_DOORS, u);
     } else if (t < c.exitStart) {
       x = sx;
       z = sz;
-      y = cabY;
+      y = cabFloor;
       yaw = FACE_DOORS;
     } else if (t < c.exitEnd) {
       const u = smooth((t - c.exitStart) / (c.exitEnd - c.exitStart));
       x = sx + (tx - sx) * u;
       z = sz + (tz - sz) * u;
-      y = c.exitY;
+      y = cabFloor + (exitFloor - cabFloor) * u;
       yaw = walkYaw(tx - sx, tz - sz);
       bob = Math.sin(u * Math.PI * BOB_FREQ) * 0.02;
+      walking = true;
     } else {
       // Arrived: stands in the destination room, looking back at the car.
       x = tx;
       z = tz;
-      y = c.exitY;
+      y = exitFloor;
       yaw = 0;
     }
+    root.userData.walking = walking;
 
     root.position.set(x, y + bob, z);
     root.rotation.y = yaw;
