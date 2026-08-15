@@ -30,11 +30,14 @@ const RULES: Record<string, NormalizeRule> = {
   "passenger-server": { height: 1.68 },
   "passenger-evening": { height: 1.72 },
   foyer: { width: 11, rotY: 0 },
-  "diorama-hotel": { width: 4.4, rotY: 0 },
-  "diorama-office": { width: 4.4, rotY: 0 },
-  "diorama-apartment": { width: 4.4, rotY: 0 },
-  "diorama-restaurant": { width: 4.4, rotY: 0 },
-  "diorama-penthouse": { width: 4.4, rotY: 0 },
+  // Rooms are wider than the sightline through the doorway, so their side
+  // walls fall outside the frame and each floor reads as part of a real
+  // building rather than a shallow box seen end to end.
+  "diorama-hotel": { width: 8.8, rotY: 0 },
+  "diorama-office": { width: 8.8, rotY: 0 },
+  "diorama-apartment": { width: 8.8, rotY: 0 },
+  "diorama-restaurant": { width: 8.8, rotY: 0 },
+  "diorama-penthouse": { width: 8.8, rotY: 0 },
 };
 
 export type AssetMap = Map<string, THREE.Group>;

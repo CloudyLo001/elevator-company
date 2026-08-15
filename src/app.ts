@@ -10,6 +10,8 @@ import { DOOR_CLOSED_X, DOOR_OPEN_X, drawLandingIndicator } from "./scene";
 
 const ROOF_Y = storyY(ROOF_STORY);
 const FINALE_LOOK_END = new THREE.Vector3(14, 118, 0);
+/** Ground covered by one full walk cycle, used to sync stride to movement. */
+const STRIDE_METRES = 1.45;
 
 type ViewMode = "front" | "third" | "cctv" | "shaft";
 
@@ -285,9 +287,13 @@ export class App {
       storyTop: (story) => w.floorTops.get(story) ?? storyY(story),
     });
 
-    // --- passenger locomotion: walk while moving, idle while standing ---
+    // --- passenger locomotion ---
+    // The stride is driven by distance walked rather than elapsed time, so
+    // feet track the floor instead of sliding, and the cycle scrubs with the
+    // scroll. Standing passengers hold a still pose rather than fidgeting.
     for (const [key, anim] of w.passengerAnims) {
-      const walking = Boolean(w.passengerRoots.get(key)?.userData.walking);
+      const root = w.passengerRoots.get(key);
+      const walking = Boolean(root?.userData.walking);
       if (walking !== anim.walking) {
         anim.walking = walking;
         const [from, to] = walking
@@ -300,11 +306,21 @@ export class App {
         to.enabled = true;
         from.setEffectiveWeight(1);
         to.setEffectiveWeight(1);
-        to.setEffectiveTimeScale(1);
         from.play();
         to.play();
-        from.crossFadeTo(to, 0.28, false);
+        from.crossFadeTo(to, 0.26, false);
       }
+
+      const walkClip = anim.walk.getClip();
+      if (walking) {
+        const walked = (root?.userData.walked as number) ?? 0;
+        const cycles = walked / STRIDE_METRES;
+        anim.walk.time =
+          (((cycles + anim.phase) % 1) + 1) % 1 * walkClip.duration;
+      }
+      // Hold the idle clip on its opening frame: a neutral stance with no
+      // head turning or weight shifting.
+      anim.idle.time = 0;
       anim.mixer.update(dt);
     }
 

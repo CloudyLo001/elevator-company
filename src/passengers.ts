@@ -60,6 +60,12 @@ function lerpAngle(a: number, b: number, u: number): number {
 }
 
 const BOB_FREQ = 8.5;
+/** Minimum horizontal gap between two people standing or walking. */
+const MIN_SEPARATION = 0.54;
+
+function hypot2(ax: number, az: number, bx: number, bz: number): number {
+  return Math.hypot(ax - bx, az - bz);
+}
 
 export interface FloorHeights {
   /** Cab floor height above the cab group's origin. */
@@ -90,6 +96,9 @@ export function updatePassengers(
     let x: number, y: number, z: number, yaw: number;
     let bob = 0;
     let walking = false;
+    // Metres covered so far in the current walk, used to drive the stride so
+    // footfalls track real movement instead of wall-clock time.
+    let walked = 0;
 
     if (t < c.boardStart) {
       // Waiting in the origin diorama, facing the landing doors.
@@ -105,6 +114,7 @@ export function updatePassengers(
       yaw = walkYaw(sx - fx, sz - fz);
       bob = Math.sin(u * Math.PI * BOB_FREQ) * 0.02;
       walking = true;
+      walked = hypot2(fx, fz, sx, sz) * u;
     } else if (t < c.turnEnd) {
       // The classic elevator about-face after stepping in.
       const u = smooth((t - c.boardEnd) / (c.turnEnd - c.boardEnd));
@@ -125,6 +135,7 @@ export function updatePassengers(
       yaw = walkYaw(tx - sx, tz - sz);
       bob = Math.sin(u * Math.PI * BOB_FREQ) * 0.02;
       walking = true;
+      walked = hypot2(sx, sz, tx, tz) * u;
     } else {
       // Arrived: stands in the destination room, looking back at the car.
       x = tx;
@@ -133,9 +144,44 @@ export function updatePassengers(
       yaw = 0;
     }
     root.userData.walking = walking;
+    root.userData.walked = walked;
 
     root.position.set(x, y + bob, z);
     root.rotation.y = yaw;
+  }
+
+  // Scripted paths can cross, which reads as people walking through each
+  // other. Relax any overlapping pair apart horizontally. This is computed
+  // fresh from the frame's own positions, so scrubbing stays deterministic.
+  const crowd = choreos
+    .map((c) => roots.get(c.def.key))
+    .filter((r): r is THREE.Group => r !== undefined && r.visible);
+  for (let pass = 0; pass < 3; pass++) {
+    for (let i = 0; i < crowd.length; i++) {
+      for (let j = i + 1; j < crowd.length; j++) {
+        const a = crowd[i];
+        const b = crowd[j];
+        // Only people sharing a floor can collide.
+        if (Math.abs(a.position.y - b.position.y) > 1.4) continue;
+        let dx = b.position.x - a.position.x;
+        let dz = b.position.z - a.position.z;
+        let dist = Math.hypot(dx, dz);
+        if (dist >= MIN_SEPARATION) continue;
+        if (dist < 1e-4) {
+          // Exactly coincident: break the tie along x.
+          dx = 1;
+          dz = 0;
+          dist = 1;
+        }
+        const push = (MIN_SEPARATION - dist) / 2;
+        const nx = (dx / dist) * push;
+        const nz = (dz / dist) * push;
+        a.position.x -= nx;
+        a.position.z -= nz;
+        b.position.x += nx;
+        b.position.z += nz;
+      }
+    }
   }
 }
 

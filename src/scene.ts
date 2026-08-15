@@ -45,6 +45,8 @@ export interface PassengerAnim {
   idle: THREE.AnimationAction;
   walk: THREE.AnimationAction;
   walking: boolean;
+  /** Fraction of the walk cycle this person starts on, 0..1. */
+  phase: number;
 }
 
 /**
@@ -909,10 +911,19 @@ export function buildWorld(assets: AssetMap, clipSets: ClipMap): World {
       idle.play();
       walk.play();
       walk.setEffectiveWeight(0);
-      // Stagger so the cast is not locked in unison.
-      idle.time = Math.random() * set.idle.duration;
-      walk.time = Math.random() * set.walk.duration;
-      passengerAnims.set(def.key, { mixer, idle, walk, walking: false });
+      // Both clips are scrubbed by hand each frame, so neither advances on
+      // its own: the walk follows distance covered and the idle is frozen.
+      idle.setEffectiveTimeScale(0);
+      walk.setEffectiveTimeScale(0);
+      idle.time = 0;
+      passengerAnims.set(def.key, {
+        mixer,
+        idle,
+        walk,
+        walking: false,
+        // Offset each person within the cycle so nobody steps in unison.
+        phase: (PASSENGERS.indexOf(def) * 0.37) % 1,
+      });
     }
     root.userData = { passengerKey: def.key };
     root.traverse((o) => {

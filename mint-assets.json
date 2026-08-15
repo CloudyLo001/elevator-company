@@ -867,10 +867,10 @@
           "role": "canonical_model",
           "format": "glb",
           "contentType": "model/gltf-binary",
-          "filename": "casual-walk-inplace-798chfq9.glb",
+          "filename": "stylish-walk-inplace-8n8ch7a3.glb",
           "localPath": "public/assets/mint/passenger-evening-walk/original_glb.glb",
           "loaderHint": "gltf",
-          "byteSize": 2728088,
+          "byteSize": 2719260,
           "extensionsUsed": [
             "KHR_materials_ior",
             "KHR_materials_specular"
@@ -1017,10 +1017,10 @@
           "role": "canonical_model",
           "format": "glb",
           "contentType": "model/gltf-binary",
-          "filename": "casual-walk-inplace-cx8cgv7d.glb",
+          "filename": "stylish-walk-inplace-758chsr4.glb",
           "localPath": "public/assets/mint/passenger-guest-walk/original_glb.glb",
           "loaderHint": "gltf",
-          "byteSize": 3198596,
+          "byteSize": 3191260,
           "extensionsUsed": [
             "KHR_materials_ior",
             "KHR_materials_specular"
@@ -1167,10 +1167,10 @@
           "role": "canonical_model",
           "format": "glb",
           "contentType": "model/gltf-binary",
-          "filename": "casual-walk-inplace-7h8cg6qt.glb",
+          "filename": "elderly-shaky-walk-inplace-v18chcqx.glb",
           "localPath": "public/assets/mint/passenger-resident-walk/original_glb.glb",
           "loaderHint": "gltf",
-          "byteSize": 2746192,
+          "byteSize": 2734424,
           "extensionsUsed": [
             "KHR_materials_ior",
             "KHR_materials_specular"
@@ -1617,10 +1617,10 @@
           "role": "canonical_model",
           "format": "glb",
           "contentType": "model/gltf-binary",
-          "filename": "casual-walk-inplace-xn8ch4vx.glb",
+          "filename": "stylish-walk-inplace-zx8chzdh.glb",
           "localPath": "public/assets/mint/passenger-worker-b-walk/original_glb.glb",
           "loaderHint": "gltf",
-          "byteSize": 2614556,
+          "byteSize": 2605416,
           "extensionsUsed": [
             "KHR_materials_ior",
             "KHR_materials_specular"
