@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { createMintGltfLoader } from "./assets/gltf-runtime";
-import { MODEL_URLS } from "./asset-manifest";
+import { MODEL_URLS, PASSENGER_CLIP_URLS } from "./asset-manifest";
 
 /**
  * Per-asset normalization: generated GLBs arrive at arbitrary scale and
@@ -39,10 +39,44 @@ const RULES: Record<string, NormalizeRule> = {
 
 export type AssetMap = Map<string, THREE.Group>;
 
+/** Idle and walk clips retargeted to one passenger's own rig. */
+export interface ClipSet {
+  idle: THREE.AnimationClip;
+  walk: THREE.AnimationClip;
+}
+export type ClipMap = Map<string, ClipSet>;
+
+export interface LoadedAssets {
+  models: AssetMap;
+  clips: ClipMap;
+}
+
+/**
+ * Bounds that also work for rigged characters. A SkinnedMesh's geometry
+ * bounding box is authored in bind space and comes out degenerate here, which
+ * would leave passengers mis-scaled and floating above the floor.
+ */
+function measure(root: THREE.Object3D): THREE.Box3 {
+  root.updateWorldMatrix(true, true);
+  const box = new THREE.Box3();
+  let skinned = false;
+  root.traverse((obj) => {
+    const mesh = obj as THREE.SkinnedMesh;
+    if (!mesh.isSkinnedMesh) return;
+    skinned = true;
+    mesh.computeBoundingBox();
+    if (mesh.boundingBox) {
+      box.union(mesh.boundingBox.clone().applyMatrix4(mesh.matrixWorld));
+    }
+  });
+  if (!skinned || box.isEmpty()) box.setFromObject(root);
+  return box;
+}
+
 function normalize(root: THREE.Group, rule: NormalizeRule): THREE.Group {
   const wrapper = new THREE.Group();
 
-  const box = new THREE.Box3().setFromObject(root);
+  const box = measure(root);
   const size = new THREE.Vector3();
   const center = new THREE.Vector3();
   box.getSize(size);
@@ -63,7 +97,7 @@ function normalize(root: THREE.Group, rule: NormalizeRule): THREE.Group {
   }
 
   // Recompute bounds post-scale, then sit on y=0 centered at x/z origin.
-  const box2 = new THREE.Box3().setFromObject(root);
+  const box2 = measure(root);
   const c2 = new THREE.Vector3();
   box2.getCenter(c2);
   root.position.x -= c2.x;
@@ -84,7 +118,7 @@ function normalize(root: THREE.Group, rule: NormalizeRule): THREE.Group {
 
 export async function loadAssets(
   onProgress: (loaded: number, total: number) => void,
-): Promise<AssetMap> {
+): Promise<LoadedAssets> {
   const manager = new THREE.LoadingManager();
   const loader = createMintGltfLoader({ manager });
   const keys = Object.keys(MODEL_URLS);
@@ -93,21 +127,37 @@ export async function loadAssets(
   manager.onProgress = (_url, loaded, total) => {
     if (!fatal) onProgress(loaded, total);
   };
+  const fail = (err: unknown) => {
+    // Latch the first fatal error; later progress must not mask it.
+    if (!fatal) fatal = err instanceof Error ? err : new Error(String(err));
+  };
 
-  const assets: AssetMap = new Map();
-  await Promise.all(
-    keys.map(async (key) => {
+  const models: AssetMap = new Map();
+  const clips: ClipMap = new Map();
+
+  await Promise.all([
+    ...keys.map(async (key) => {
       try {
         const gltf = await loader.loadAsync(MODEL_URLS[key]);
-        assets.set(key, normalize(gltf.scene, RULES[key] ?? {}));
+        models.set(key, normalize(gltf.scene, RULES[key] ?? {}));
       } catch (err) {
-        // Latch the first fatal error; later progress must not mask it.
-        if (!fatal) {
-          fatal = err instanceof Error ? err : new Error(String(err));
-        }
+        fail(err);
       }
     }),
-  );
+    ...Object.entries(PASSENGER_CLIP_URLS).map(async ([key, urls]) => {
+      try {
+        const [idleGltf, walkGltf] = await Promise.all([
+          loader.loadAsync(urls.idle),
+          loader.loadAsync(urls.walk),
+        ]);
+        const idle = idleGltf.animations[0];
+        const walk = walkGltf.animations[0];
+        if (idle && walk) clips.set(key, { idle, walk });
+      } catch (err) {
+        fail(err);
+      }
+    }),
+  ]);
   if (fatal) throw fatal;
-  return assets;
+  return { models, clips };
 }

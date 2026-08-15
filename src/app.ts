@@ -285,6 +285,29 @@ export class App {
       storyTop: (story) => w.floorTops.get(story) ?? storyY(story),
     });
 
+    // --- passenger locomotion: walk while moving, idle while standing ---
+    for (const [key, anim] of w.passengerAnims) {
+      const walking = Boolean(w.passengerRoots.get(key)?.userData.walking);
+      if (walking !== anim.walking) {
+        anim.walking = walking;
+        const [from, to] = walking
+          ? [anim.idle, anim.walk]
+          : [anim.walk, anim.idle];
+        // Reset both base weights to 1 first: a fade multiplies the base
+        // weight, so an action parked at 0 would never fade back in and the
+        // character would snap to its bind pose.
+        from.enabled = true;
+        to.enabled = true;
+        from.setEffectiveWeight(1);
+        to.setEffectiveWeight(1);
+        to.setEffectiveTimeScale(1);
+        from.play();
+        to.play();
+        from.crossFadeTo(to, 0.28, false);
+      }
+      anim.mixer.update(dt);
+    }
+
     // --- dummy button press animation ---
     if (this.pressingButtons.size) {
       const now = performance.now();
