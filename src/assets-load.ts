@@ -16,17 +16,26 @@ interface NormalizeRule {
   exact?: [number, number, number];
   /** Extra yaw after normalization (radians). */
   rotY?: number;
+  /**
+   * Drop the model by this much after it is seated on y=0, to bury a base
+   * plinth the generator added underneath the figure.
+   */
+  sink?: number;
 }
 
 const RULES: Record<string, NormalizeRule> = {
   "elevator-cab": { height: 2.75, rotY: Math.PI },
   "door-panel": { exact: [1.2, 2.62, 0.07] },
-  tower: { height: 256 },
+  // Uniform: a castle keep's proportions are the point, so it is fitted by
+  // height and left to be as broad as it naturally is.
+  tower: { height: 200 },
   "passenger-bellhop": { height: 1.68 },
   "passenger-guest": { height: 1.7 },
   "passenger-worker-a": { height: 1.74 },
   "passenger-worker-b": { height: 1.66 },
-  "passenger-resident": { height: 1.62 },
+  // Sinks the octagonal display plinth the generator put under him and the
+  // dog, so the pair stand on the floor rather than on a base.
+  "passenger-resident": { height: 1.62, sink: 0.063 },
   "passenger-server": { height: 1.68 },
   "passenger-evening": { height: 1.72 },
   foyer: { width: 11, rotY: 0 },
@@ -93,7 +102,7 @@ function normalize(root: THREE.Group, rule: NormalizeRule): THREE.Group {
   box2.getCenter(c2);
   root.position.x -= c2.x;
   root.position.z -= c2.z;
-  root.position.y -= box2.min.y;
+  root.position.y -= box2.min.y + (rule.sink ?? 0);
 
   wrapper.add(root);
   if (rule.rotY) wrapper.rotation.y = rule.rotY;

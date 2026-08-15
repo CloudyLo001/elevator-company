@@ -88,6 +88,24 @@
       <a class="outro-cta" href="mailto:hello@elevate.example">START A PROJECT</a>
     </div>
 
+    <!-- Rooftop control bar: only appears once you are outside at the end -->
+    <div id="sky-bar" class="sky-bar">
+      <div class="sky-group">
+        <span class="sky-label">TIME</span>
+        <button class="sky-opt" data-time="morning">MORNING</button>
+        <button class="sky-opt active" data-time="noon">NOON</button>
+        <button class="sky-opt" data-time="sunset">SUNSET</button>
+        <button class="sky-opt" data-time="night">NIGHT</button>
+      </div>
+      <div class="sky-group">
+        <span class="sky-label">WEATHER</span>
+        <button class="sky-opt active" data-weather="clear">CLEAR</button>
+        <button class="sky-opt" data-weather="rain">RAIN</button>
+        <button class="sky-opt" data-weather="snow">SNOW</button>
+      </div>
+      <button id="rebuild" class="sky-rebuild">&#8635;&nbsp;REBUILD</button>
+    </div>
+
     <div id="vignette" class="vignette"></div>
 
     <script type="module" src="/src/main.ts"></script>

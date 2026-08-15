@@ -997,7 +997,7 @@
         "manifestVersion": 1,
         "kind": "asset",
         "assetType": "model",
-        "assetId": "ks7d57gn6ctwe6hm6fmks3347x8cf30s"
+        "assetId": "ks7887xwr1hefktyagmbhmy2d18chjgv"
       },
       "transform": {
         "position": [
@@ -1023,10 +1023,10 @@
           "role": "canonical_model",
           "format": "glb",
           "contentType": "model/gltf-binary",
-          "filename": "sage-tenshu-tower-7x8cf30s-original.glb",
+          "filename": "gilded-tenshu-keep-d18chjgv-original.glb",
           "localPath": "public/assets/mint/tower/original_glb.glb",
           "loaderHint": "gltf",
-          "byteSize": 860432,
+          "byteSize": 1143224,
           "extensionsUsed": [],
           "extensionsRequired": [],
           "usesDraco": false,
@@ -1042,10 +1042,10 @@
           "role": "preview_image",
           "format": "webp",
           "contentType": "image/webp",
-          "filename": "sage-tenshu-tower-7x8cf30s-preview.webp",
+          "filename": "gilded-tenshu-keep-d18chjgv-preview.webp",
           "localPath": "public/assets/mint/tower/preview_image.webp",
           "loaderHint": "image",
-          "byteSize": 50054
+          "byteSize": 109596
         }
       },
       "thumbnailUrl": "public/assets/mint/tower/preview_image.webp"

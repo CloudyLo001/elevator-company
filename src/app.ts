@@ -9,7 +9,59 @@ import { Overlay } from "./overlay";
 import { DOOR_CLOSED_X, DOOR_OPEN_X, drawLandingIndicator } from "./scene";
 
 const ROOF_Y = storyY(ROOF_STORY);
-const FINALE_LOOK_END = new THREE.Vector3(14, 118, 0);
+const FINALE_LOOK_END = new THREE.Vector3(0, 96, 0);
+type TimeKey = "morning" | "noon" | "sunset" | "night";
+type WeatherKey = "clear" | "rain" | "snow";
+
+interface SkyPreset {
+  sky: number;
+  light: number;
+  lightIntensity: number;
+  hemi: number;
+  hemiIntensity: number;
+  stars: number;
+}
+
+/** Rooftop skies the finale can open out into. */
+const TIMES: Record<TimeKey, SkyPreset> = {
+  morning: {
+    sky: 0xaecbe2,
+    light: 0xffe3c4,
+    lightIntensity: 1.7,
+    hemi: 0xdfeaf2,
+    hemiIntensity: 1.35,
+    stars: 0,
+  },
+  noon: {
+    sky: 0x8fbfe8,
+    light: 0xffffff,
+    lightIntensity: 2.1,
+    hemi: 0xe9f1f8,
+    hemiIntensity: 1.65,
+    stars: 0,
+  },
+  sunset: {
+    sky: 0xdb9a72,
+    light: 0xffb173,
+    lightIntensity: 1.6,
+    hemi: 0xf0c4a4,
+    hemiIntensity: 1.05,
+    stars: 0.18,
+  },
+  night: {
+    sky: 0x161d33,
+    light: 0x8fa0c8,
+    lightIntensity: 0.5,
+    hemi: 0x2e3c58,
+    hemiIntensity: 0.5,
+    stars: 1,
+  },
+};
+
+/** Seconds a full rebuild takes, matching the reference's pacing. */
+const REBUILD_SECONDS = 4.5;
+const ZOOM_MIN = 0.55;
+const ZOOM_MAX = 1.65;
 
 type ViewMode = "front" | "third" | "cctv" | "shaft";
 
@@ -54,6 +106,19 @@ export class App {
   private bg = new THREE.Color(0x494f4a);
   private ambientTarget = new THREE.Color();
   private glowTarget = new THREE.Color();
+  private skyTarget = new THREE.Color();
+  private tintTarget = new THREE.Color();
+  // Rooftop state: sky, weather, build progress and free-look camera.
+  private timeKey: TimeKey = "noon";
+  private weatherKey: WeatherKey = "clear";
+  private rebuildStart: number | null = null;
+  private orbitYaw = 0;
+  private orbitPitch = 0;
+  private zoom = 1;
+  private dragging = false;
+  private dragX = 0;
+  private dragY = 0;
+  private atEnd = false;
 
   constructor(
     private world: World,
@@ -66,6 +131,8 @@ export class App {
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.05;
+    // Needed for the tower's rising build plane.
+    this.renderer.localClippingEnabled = true;
 
     this.camera = new THREE.PerspectiveCamera(
       44,
@@ -85,7 +152,7 @@ export class App {
         new THREE.Vector3(0, ROOF_Y + 1.6, 0.9),
         new THREE.Vector3(0, ROOF_Y + 2.6, -7.5),
         new THREE.Vector3(30, ROOF_Y + 10, 70),
-        new THREE.Vector3(120, 205, 265),
+        new THREE.Vector3(150, 152, 336),
       ],
       false,
       "catmullrom",
@@ -203,6 +270,85 @@ export class App {
       });
     }
     addEventListener("click", () => viewMenu.classList.remove("open"));
+
+    this.bindRooftopControls();
+  }
+
+  /** Sky, weather, rebuild and free-look, all live only on the rooftop. */
+  private bindRooftopControls(): void {
+    const bar = document.getElementById("sky-bar")!;
+    const setActive = (group: HTMLElement, chosen: Element) => {
+      for (const b of group.querySelectorAll(".sky-opt")) {
+        b.classList.toggle("active", b === chosen);
+      }
+    };
+    for (const btn of bar.querySelectorAll<HTMLButtonElement>("[data-time]")) {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.timeKey = btn.dataset.time as TimeKey;
+        setActive(btn.parentElement!, btn);
+      });
+    }
+    for (const btn of bar.querySelectorAll<HTMLButtonElement>("[data-weather]")) {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.weatherKey = btn.dataset.weather as WeatherKey;
+        setActive(btn.parentElement!, btn);
+      });
+    }
+    document.getElementById("rebuild")!.addEventListener("click", (e) => {
+      e.stopPropagation();
+      this.rebuildStart = performance.now();
+    });
+
+    // Drag to orbit the tower.
+    addEventListener("pointerdown", (e) => {
+      if (!this.atEnd) return;
+      if ((e.target as HTMLElement).closest("button, a, .sky-bar")) return;
+      this.dragging = true;
+      this.dragX = e.clientX;
+      this.dragY = e.clientY;
+    });
+    addEventListener("pointermove", (e) => {
+      if (!this.dragging) return;
+      this.orbitYaw -= (e.clientX - this.dragX) * 0.005;
+      this.orbitPitch = THREE.MathUtils.clamp(
+        this.orbitPitch + (e.clientY - this.dragY) * 0.0022,
+        -0.5,
+        0.85,
+      );
+      this.dragX = e.clientX;
+      this.dragY = e.clientY;
+    });
+    for (const evt of ["pointerup", "pointercancel"]) {
+      addEventListener(evt, () => {
+        this.dragging = false;
+      });
+    }
+    addEventListener("dblclick", () => {
+      if (!this.atEnd) return;
+      this.orbitYaw = 0;
+      this.orbitPitch = 0;
+      this.zoom = 1;
+    });
+
+    // Wheel zooms while out on the roof. Once fully zoomed out, further
+    // scrolling up is handed back so the ride can be re-entered.
+    addEventListener(
+      "wheel",
+      (e) => {
+        if (!this.atEnd) return;
+        if (e.deltaY < 0 && this.zoom >= ZOOM_MAX - 1e-3) return;
+        e.preventDefault();
+        e.stopPropagation();
+        this.zoom = THREE.MathUtils.clamp(
+          this.zoom + e.deltaY * 0.0012,
+          ZOOM_MIN,
+          ZOOM_MAX,
+        );
+      },
+      { passive: false, capture: true },
+    );
   }
 
   private travelTo(story: number): void {
@@ -310,23 +456,77 @@ export class App {
     }
 
     // --- mood ---
+    // Stepping outside hands the sky over to the rooftop controls. The white
+    // flash that hides the world swap also covers the changeover, and the
+    // ride's own per-floor moods are left untouched.
+    const dayBlend = smoothstep((state.finale - 0.18) / 0.22);
+    const preset = TIMES[this.timeKey];
     const mood = STOPS[state.stopIndex].mood;
     const k = 1 - Math.exp(-dt * 3.2);
-    this.bg.lerp(new THREE.Color(mood.sky), k);
+
+    this.skyTarget.set(mood.sky);
+    if (dayBlend > 0) {
+      this.tintTarget.set(preset.sky);
+      // Rain drains the colour out of whatever sky is showing.
+      if (this.weatherKey === "rain") {
+        this.tintTarget.lerp(this.tintTarget.clone().offsetHSL(0, -0.4, -0.1), 0.75);
+      }
+      this.skyTarget.lerp(this.tintTarget, dayBlend);
+    }
+    this.bg.lerp(this.skyTarget, k);
     this.ambientTarget.set(mood.ambient);
     this.glowTarget.set(mood.glow);
+    w.hemi.intensity = THREE.MathUtils.lerp(0.85, preset.hemiIntensity, dayBlend);
+    w.keyLight.intensity = THREE.MathUtils.lerp(1.1, preset.lightIntensity, dayBlend);
+    if (dayBlend > 0.01) {
+      w.keyLight.color.lerp(this.tintTarget.set(preset.light), k);
+      w.hemi.color.lerp(this.tintTarget.set(preset.hemi), k);
+    }
     (w.scene.background as THREE.Color).copy(this.bg);
     if (w.scene.fog) (w.scene.fog as THREE.Fog).color.copy(this.bg);
     w.ambient.color.lerp(this.ambientTarget, k);
     w.cabLight.color.lerp(this.glowTarget, k * 0.6);
 
     const altitude = THREE.MathUtils.clamp(state.cabY / ROOF_Y, 0, 1);
+    const riding = Math.max(altitude * 0.85, state.finale > 0 ? 0.95 : 0);
     const starMat = w.stars.material as THREE.PointsMaterial;
-    starMat.opacity = Math.max(altitude * 0.85, state.finale > 0 ? 0.95 : 0);
-    (w.moon.material as THREE.MeshBasicMaterial).opacity = Math.max(
-      (altitude - 0.55) * 2,
-      state.finale > 0 ? 1 : 0,
+    starMat.opacity = THREE.MathUtils.lerp(riding, preset.stars, dayBlend);
+    (w.moon.material as THREE.MeshBasicMaterial).opacity = THREE.MathUtils.lerp(
+      Math.max((altitude - 0.55) * 2, state.finale > 0 ? 1 : 0),
+      preset.stars,
+      dayBlend,
     );
+
+    // --- rooftop build, weather and free-look ---
+    this.atEnd = state.finale > 0.62;
+    document.getElementById("sky-bar")!.classList.toggle("available", this.atEnd);
+
+    // The tower rises with the scroll, and REBUILD replays it on demand.
+    let build = smoothstep((state.finale - 0.3) / 0.5);
+    if (this.rebuildStart !== null) {
+      const elapsed = (timeMs - this.rebuildStart) / (REBUILD_SECONDS * 1000);
+      if (elapsed >= 1) this.rebuildStart = null;
+      else build = Math.min(build, smoothstep(elapsed));
+    }
+    const towerTop = w.towerSize.height * 1.02;
+    w.towerClip.constant = build * towerTop;
+    const building = state.finale > 0.25 && build > 0.002 && build < 0.995;
+    w.buildLine.visible = building;
+    if (building) {
+      const span = w.towerSize.width * 1.04;
+      w.buildLine.position.set(0, build * towerTop, 0);
+      w.buildLine.scale.set(span, 1, span);
+      (w.buildLine.material as THREE.MeshBasicMaterial).opacity = 0.45;
+    }
+
+    const rainOn = this.weatherKey === "rain" ? dayBlend : 0;
+    const snowOn = this.weatherKey === "snow" ? dayBlend : 0;
+    w.rain.visible = rainOn > 0.01;
+    w.snow.visible = snowOn > 0.01;
+    (w.rain.material as THREE.LineBasicMaterial).opacity = 0.45 * rainOn;
+    (w.snow.material as THREE.PointsMaterial).opacity = 0.9 * snowOn;
+    if (w.rain.visible) this.fallRain(w.rain, dt);
+    if (w.snow.visible) this.fallSnow(w.snow, dt);
 
     // --- view modes & finale ---
     const finaleWorld = state.finale > 0.25;
@@ -357,6 +557,24 @@ export class App {
       this.skyfade.style.opacity = String(flash * flash);
 
       this.finaleCurve.getPoint(THREE.MathUtils.clamp(u, 0, 1), tPos);
+      // Once the tower is out, the pointer leans the camera and dragging
+      // orbits it, with the wheel pulling in and out.
+      const parallax = smoothstep((u - 0.35) / 0.65);
+      if (parallax > 0) {
+        const yaw = this.orbitYaw + this.pointer.x * 0.2 * parallax;
+        const lift =
+          (this.orbitPitch + this.pointer.y * 0.12 * parallax) * 150;
+        const cos = Math.cos(yaw);
+        const sin = Math.sin(yaw);
+        const cx = tPos.x * cos - tPos.z * sin;
+        const cz = tPos.x * sin + tPos.z * cos;
+        const pivot = ROOF_Y * 0.45;
+        tPos.set(
+          cx * this.zoom,
+          pivot + (tPos.y + lift - pivot) * this.zoom,
+          cz * this.zoom,
+        );
+      }
       tLook
         .set(0, ROOF_Y + 1.3, -5)
         .lerp(FINALE_LOOK_END, Math.min(1, u * 1.6));
@@ -461,6 +679,45 @@ export class App {
     }
 
     this.renderer.render(w.scene, this.camera);
+  }
+
+  /** Advance falling rain, wrapping each streak back to the top. */
+  private fallRain(rain: THREE.LineSegments, dt: number): void {
+    const pos = rain.geometry.getAttribute("position") as THREE.BufferAttribute;
+    const { speeds, height } = rain.userData as {
+      speeds: Float32Array;
+      height: number;
+    };
+    const arr = pos.array as Float32Array;
+    for (let i = 0; i < speeds.length; i++) {
+      const drop = speeds[i] * dt;
+      arr[i * 6 + 1] -= drop;
+      arr[i * 6 + 4] -= drop;
+      if (arr[i * 6 + 4] < 0) {
+        const len = arr[i * 6 + 1] - arr[i * 6 + 4];
+        arr[i * 6 + 1] = height;
+        arr[i * 6 + 4] = height - len;
+      }
+    }
+    pos.needsUpdate = true;
+  }
+
+  /** Advance drifting snow, wrapping each flake back to the top. */
+  private fallSnow(snow: THREE.Points, dt: number): void {
+    const pos = snow.geometry.getAttribute("position") as THREE.BufferAttribute;
+    const { speeds, drift, height } = snow.userData as {
+      speeds: Float32Array;
+      drift: Float32Array;
+      height: number;
+    };
+    const arr = pos.array as Float32Array;
+    for (let i = 0; i < speeds.length; i++) {
+      arr[i * 3 + 1] -= speeds[i] * dt;
+      drift[i] += dt * 0.8;
+      arr[i * 3] += Math.sin(drift[i]) * dt * 2.2;
+      if (arr[i * 3 + 1] < 0) arr[i * 3 + 1] = height;
+    }
+    pos.needsUpdate = true;
   }
 
   /** Camera placement for each labeled view; the intro blends into these. */

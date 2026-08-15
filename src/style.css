@@ -346,6 +346,70 @@ html, body {
 
 .hidden { display: none !important; }
 
+/* ---------- rooftop sky controls ---------- */
+.sky-bar {
+  position: fixed;
+  z-index: 32;
+  left: 50%;
+  bottom: 26px;
+  transform: translate(-50%, 16px);
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  padding: 12px 20px;
+  background: rgba(22, 24, 26, 0.55);
+  border: 1px solid rgba(232, 228, 216, 0.18);
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.5s ease, transform 0.5s ease, visibility 0.5s;
+  white-space: nowrap;
+}
+.sky-bar.available {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+}
+.sky-group { display: flex; align-items: center; gap: 12px; }
+.sky-label {
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  opacity: 0.55;
+  margin-right: 2px;
+}
+.sky-opt,
+.sky-rebuild {
+  background: none;
+  border: none;
+  color: var(--paper);
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  cursor: pointer;
+  padding: 4px 2px;
+  opacity: 0.62;
+  border-bottom: 1px solid transparent;
+  transition: opacity 0.25s, color 0.25s, border-color 0.25s;
+}
+.sky-opt:hover,
+.sky-rebuild:hover { opacity: 1; color: var(--brass); }
+.sky-opt.active {
+  opacity: 1;
+  color: var(--brass);
+  border-bottom-color: var(--brass);
+}
+.sky-rebuild {
+  opacity: 0.8;
+  border-left: 1px solid rgba(232, 228, 216, 0.18);
+  padding-left: 22px;
+}
+
+@media (max-width: 900px) {
+  .sky-bar { gap: 14px; padding: 10px 12px; bottom: 14px; }
+  .sky-opt, .sky-rebuild { font-size: 10px; letter-spacing: 0.14em; }
+  .sky-rebuild { padding-left: 12px; }
+}
+
 /* ---------- readability layer ----------
    The overlay sits on bright, busy 3D, so every run of text gets a heavier
    layered shadow and a larger size than the original poster-style spec. */

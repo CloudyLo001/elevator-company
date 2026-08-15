@@ -36,6 +36,78 @@ export interface World {
   buttonPanel: THREE.Group;
   landingIndicator: THREE.Mesh | null;
   passengerRoots: Map<string, THREE.Group>;
+  /** Rising plane that reveals the tower from the ground up. */
+  towerClip: THREE.Plane;
+  /** Height and plan width of the finale tower, for the build animation. */
+  towerSize: { height: number; width: number };
+  /** Glowing line riding the top of the built section. */
+  buildLine: THREE.Mesh;
+  rain: THREE.LineSegments;
+  snow: THREE.Points;
+}
+
+/** Falling precipitation around the tower, used only on the rooftop. */
+function makeRain(count: number, spread: number, height: number): THREE.LineSegments {
+  const pos = new Float32Array(count * 6);
+  const speeds = new Float32Array(count);
+  for (let i = 0; i < count; i++) {
+    const x = (Math.random() - 0.5) * spread;
+    const y = Math.random() * height;
+    const z = (Math.random() - 0.5) * spread;
+    const len = 2.6 + Math.random() * 3.4;
+    pos[i * 6] = x;
+    pos[i * 6 + 1] = y;
+    pos[i * 6 + 2] = z;
+    pos[i * 6 + 3] = x;
+    pos[i * 6 + 4] = y - len;
+    pos[i * 6 + 5] = z;
+    speeds[i] = 60 + Math.random() * 55;
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+  const mesh = new THREE.LineSegments(
+    geo,
+    new THREE.LineBasicMaterial({
+      color: 0xc8d8e8,
+      transparent: true,
+      opacity: 0,
+      depthWrite: false,
+      fog: false,
+    }),
+  );
+  mesh.userData = { speeds, spread, height };
+  mesh.frustumCulled = false;
+  return mesh;
+}
+
+function makeSnow(count: number, spread: number, height: number): THREE.Points {
+  const pos = new Float32Array(count * 3);
+  const speeds = new Float32Array(count);
+  const drift = new Float32Array(count);
+  for (let i = 0; i < count; i++) {
+    pos[i * 3] = (Math.random() - 0.5) * spread;
+    pos[i * 3 + 1] = Math.random() * height;
+    pos[i * 3 + 2] = (Math.random() - 0.5) * spread;
+    speeds[i] = 5 + Math.random() * 7;
+    drift[i] = Math.random() * Math.PI * 2;
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+  const mesh = new THREE.Points(
+    geo,
+    new THREE.PointsMaterial({
+      color: 0xf4f6f8,
+      size: 1.5,
+      transparent: true,
+      opacity: 0,
+      depthWrite: false,
+      sizeAttenuation: true,
+      fog: false,
+    }),
+  );
+  mesh.userData = { speeds, drift, spread, height };
+  mesh.frustumCulled = false;
+  return mesh;
 }
 
 /**
@@ -878,9 +950,44 @@ export function buildWorld(assets: AssetMap): World {
   // ---------- tower (finale reveal) ----------
   const tower = new THREE.Group();
   const towerModel = assets.get("tower");
-  if (towerModel) tower.add(towerModel);
+  // Clips everything above its height, so the tower can be built upward.
+  const towerClip = new THREE.Plane(new THREE.Vector3(0, -1, 0), 0);
+  if (towerModel) {
+    tower.add(towerModel);
+    towerModel.traverse((obj) => {
+      const mesh = obj as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+      for (const mat of mats) mat.clippingPlanes = [towerClip];
+    });
+  }
   tower.visible = false;
   scene.add(tower);
+  const towerBox = new THREE.Box3().setFromObject(tower);
+  const towerSize = {
+    height: Math.max(1, towerBox.max.y - towerBox.min.y),
+    width: Math.max(1, towerBox.max.x - towerBox.min.x),
+  };
+
+  // Bright seam riding the top of the finished section.
+  const buildLine = new THREE.Mesh(
+    new THREE.BoxGeometry(1, 0.5, 1),
+    new THREE.MeshBasicMaterial({
+      color: 0xfff2d8,
+      transparent: true,
+      opacity: 0,
+      depthWrite: false,
+      fog: false,
+    }),
+  );
+  buildLine.visible = false;
+  scene.add(buildLine);
+
+  const rain = makeRain(1400, 300, 340);
+  const snow = makeSnow(1600, 300, 340);
+  rain.visible = false;
+  snow.visible = false;
+  scene.add(rain, snow);
 
   // ---------- passengers ----------
   const passengerRoots = new Map<string, THREE.Group>();
@@ -970,5 +1077,10 @@ export function buildWorld(assets: AssetMap): World {
     buttonPanel: panelGroup,
     landingIndicator,
     passengerRoots,
+    towerClip,
+    towerSize,
+    buildLine,
+    rain,
+    snow,
   };
 }
