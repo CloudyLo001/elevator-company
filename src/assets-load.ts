@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { createMintGltfLoader } from "./assets/gltf-runtime";
-import { MODEL_URLS, PASSENGER_CLIP_URLS } from "./asset-manifest";
+import { MODEL_URLS } from "./asset-manifest";
 
 /**
  * Per-asset normalization: generated GLBs arrive at arbitrary scale and
@@ -41,18 +41,6 @@ const RULES: Record<string, NormalizeRule> = {
 };
 
 export type AssetMap = Map<string, THREE.Group>;
-
-/** Idle and walk clips retargeted to one passenger's own rig. */
-export interface ClipSet {
-  idle: THREE.AnimationClip;
-  walk: THREE.AnimationClip;
-}
-export type ClipMap = Map<string, ClipSet>;
-
-export interface LoadedAssets {
-  models: AssetMap;
-  clips: ClipMap;
-}
 
 /**
  * Bounds that also work for rigged characters. A SkinnedMesh's geometry
@@ -121,7 +109,7 @@ function normalize(root: THREE.Group, rule: NormalizeRule): THREE.Group {
 
 export async function loadAssets(
   onProgress: (loaded: number, total: number) => void,
-): Promise<LoadedAssets> {
+): Promise<AssetMap> {
   const manager = new THREE.LoadingManager();
   const loader = createMintGltfLoader({ manager });
   const keys = Object.keys(MODEL_URLS);
@@ -136,10 +124,8 @@ export async function loadAssets(
   };
 
   const models: AssetMap = new Map();
-  const clips: ClipMap = new Map();
-
-  await Promise.all([
-    ...keys.map(async (key) => {
+  await Promise.all(
+    keys.map(async (key) => {
       try {
         const gltf = await loader.loadAsync(MODEL_URLS[key]);
         models.set(key, normalize(gltf.scene, RULES[key] ?? {}));
@@ -147,20 +133,7 @@ export async function loadAssets(
         fail(err);
       }
     }),
-    ...Object.entries(PASSENGER_CLIP_URLS).map(async ([key, urls]) => {
-      try {
-        const [idleGltf, walkGltf] = await Promise.all([
-          loader.loadAsync(urls.idle),
-          loader.loadAsync(urls.walk),
-        ]);
-        const idle = idleGltf.animations[0];
-        const walk = walkGltf.animations[0];
-        if (idle && walk) clips.set(key, { idle, walk });
-      } catch (err) {
-        fail(err);
-      }
-    }),
-  ]);
+  );
   if (fatal) throw fatal;
-  return { models, clips };
+  return models;
 }

@@ -14,8 +14,8 @@ async function boot(): Promise<void> {
 
   setLoadingStatus("PREPARING CAR…");
   try {
-    const { models, clips } = await loadAssets(setLoadingProgress);
-    const world = buildWorld(models, clips);
+    const assets = await loadAssets(setLoadingProgress);
+    const world = buildWorld(assets);
     const app = new App(world, canvas);
     // Dev-only inspection handle for QA tooling.
     if (import.meta.env.DEV) {

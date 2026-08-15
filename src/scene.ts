@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import type { AssetMap, ClipMap } from "./assets-load";
+import type { AssetMap } from "./assets-load";
 import { BUTTON_FLOORS, PASSENGERS, STOPS, ROOF_STORY, storyY } from "./content";
 
 export const DOOR_Z = -1.12;
@@ -36,17 +36,6 @@ export interface World {
   buttonPanel: THREE.Group;
   landingIndicator: THREE.Mesh | null;
   passengerRoots: Map<string, THREE.Group>;
-  passengerAnims: Map<string, PassengerAnim>;
-}
-
-/** Idle/walk playback state for one rigged passenger. */
-export interface PassengerAnim {
-  mixer: THREE.AnimationMixer;
-  idle: THREE.AnimationAction;
-  walk: THREE.AnimationAction;
-  walking: boolean;
-  /** Fraction of the walk cycle this person starts on, 0..1. */
-  phase: number;
 }
 
 /**
@@ -250,7 +239,7 @@ function buttonLabelTexture(label: string): THREE.CanvasTexture {
   return tex;
 }
 
-export function buildWorld(assets: AssetMap, clipSets: ClipMap): World {
+export function buildWorld(assets: AssetMap): World {
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x494f4a);
   scene.fog = new THREE.Fog(0x494f4a, 26, 110);
@@ -895,36 +884,11 @@ export function buildWorld(assets: AssetMap, clipSets: ClipMap): World {
 
   // ---------- passengers ----------
   const passengerRoots = new Map<string, THREE.Group>();
-  const passengerAnims = new Map<string, PassengerAnim>();
   for (const def of PASSENGERS) {
     const model = assets.get(def.key);
     if (!model) continue;
     const root = new THREE.Group();
     root.add(model);
-
-    // Each rig gets its own clips, so no retargeting is needed.
-    const set = clipSets.get(def.key);
-    if (set) {
-      const mixer = new THREE.AnimationMixer(model);
-      const idle = mixer.clipAction(set.idle);
-      const walk = mixer.clipAction(set.walk);
-      idle.play();
-      walk.play();
-      walk.setEffectiveWeight(0);
-      // Both clips are scrubbed by hand each frame, so neither advances on
-      // its own: the walk follows distance covered and the idle is frozen.
-      idle.setEffectiveTimeScale(0);
-      walk.setEffectiveTimeScale(0);
-      idle.time = 0;
-      passengerAnims.set(def.key, {
-        mixer,
-        idle,
-        walk,
-        walking: false,
-        // Offset each person within the cycle so nobody steps in unison.
-        phase: (PASSENGERS.indexOf(def) * 0.37) % 1,
-      });
-    }
     root.userData = { passengerKey: def.key };
     root.traverse((o) => {
       o.userData.passengerKey = def.key;
@@ -1006,6 +970,5 @@ export function buildWorld(assets: AssetMap, clipSets: ClipMap): World {
     buttonPanel: panelGroup,
     landingIndicator,
     passengerRoots,
-    passengerAnims,
   };
 }

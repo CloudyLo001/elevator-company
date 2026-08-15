@@ -29,23 +29,3 @@ export const MODEL_URLS: Record<string, string> = {
   "diorama-restaurant": asset("assets/mint/diorama-restaurant/original_glb.glb"),
   "diorama-penthouse": asset("assets/mint/diorama-penthouse/original_glb.glb"),
 };
-
-/** Locomotion clips generated per rigged passenger. */
-export const PASSENGER_CLIP_URLS: Record<string, { idle: string; walk: string }> =
-  Object.fromEntries(
-    [
-      "passenger-bellhop",
-      "passenger-guest",
-      "passenger-worker-a",
-      "passenger-worker-b",
-      "passenger-resident",
-      "passenger-server",
-      "passenger-evening",
-    ].map((key) => [
-      key,
-      {
-        idle: asset(`assets/mint/${key}-idle/original_glb.glb`),
-        walk: asset(`assets/mint/${key}-walk/original_glb.glb`),
-      },
-    ]),
-  );

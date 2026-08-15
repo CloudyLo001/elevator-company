@@ -591,7 +591,7 @@
         "manifestVersion": 1,
         "kind": "asset",
         "assetType": "model",
-        "assetId": "ks7bscjgqngvthtqs5j20rep4s8chsec"
+        "assetId": "ks75v86ns2hepgjk0s7sfk95en8ce4np"
       },
       "transform": {
         "position": [
@@ -617,14 +617,11 @@
           "role": "canonical_model",
           "format": "glb",
           "contentType": "model/gltf-binary",
-          "filename": "bellhop-nx8chkzk-rigged.glb",
+          "filename": "bellhop-en8ce4np-original.glb",
           "localPath": "public/assets/mint/passenger-bellhop/original_glb.glb",
           "loaderHint": "gltf",
-          "byteSize": 2799836,
-          "extensionsUsed": [
-            "KHR_materials_ior",
-            "KHR_materials_specular"
-          ],
+          "byteSize": 857376,
+          "extensionsUsed": [],
           "extensionsRequired": [],
           "usesDraco": false,
           "requiresDraco": false,
@@ -633,115 +630,26 @@
           "usesKtx2": false,
           "requiresKtx2": false,
           "unknownRequiredExtensions": []
+        },
+        "preview_image": {
+          "artifactId": "preview_image",
+          "role": "preview_image",
+          "format": "webp",
+          "contentType": "image/webp",
+          "filename": "bellhop-en8ce4np-preview.webp",
+          "localPath": "public/assets/mint/passenger-bellhop/preview_image.webp",
+          "loaderHint": "image",
+          "byteSize": 32624
         }
-      }
-    },
-    "passenger-bellhop-idle": {
-      "source": {
-        "manifestVersion": 1,
-        "kind": "asset",
-        "assetType": "model",
-        "assetId": "ks7bscjgqngvthtqs5j20rep4s8chsec-idle"
       },
-      "transform": {
-        "position": [
-          0,
-          0,
-          0
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "scale": [
-          1,
-          1,
-          1
-        ]
-      },
-      "mode": "local_files",
-      "artifacts": {
-        "original_glb": {
-          "artifactId": "original_glb",
-          "role": "canonical_model",
-          "format": "glb",
-          "contentType": "model/gltf-binary",
-          "filename": "idle-x98cg2tn.glb",
-          "localPath": "public/assets/mint/passenger-bellhop-idle/original_glb.glb",
-          "loaderHint": "gltf",
-          "byteSize": 2846876,
-          "extensionsUsed": [
-            "KHR_materials_ior",
-            "KHR_materials_specular"
-          ],
-          "extensionsRequired": [],
-          "usesDraco": false,
-          "requiresDraco": false,
-          "usesMeshopt": false,
-          "requiresMeshopt": false,
-          "usesKtx2": false,
-          "requiresKtx2": false,
-          "unknownRequiredExtensions": []
-        }
-      }
-    },
-    "passenger-bellhop-walk": {
-      "source": {
-        "manifestVersion": 1,
-        "kind": "asset",
-        "assetType": "model",
-        "assetId": "ks7bscjgqngvthtqs5j20rep4s8chsec-walk"
-      },
-      "transform": {
-        "position": [
-          0,
-          0,
-          0
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "scale": [
-          1,
-          1,
-          1
-        ]
-      },
-      "mode": "local_files",
-      "artifacts": {
-        "original_glb": {
-          "artifactId": "original_glb",
-          "role": "canonical_model",
-          "format": "glb",
-          "contentType": "model/gltf-binary",
-          "filename": "casual-walk-inplace-sx8ch6e6.glb",
-          "localPath": "public/assets/mint/passenger-bellhop-walk/original_glb.glb",
-          "loaderHint": "gltf",
-          "byteSize": 2848700,
-          "extensionsUsed": [
-            "KHR_materials_ior",
-            "KHR_materials_specular"
-          ],
-          "extensionsRequired": [],
-          "usesDraco": false,
-          "requiresDraco": false,
-          "usesMeshopt": false,
-          "requiresMeshopt": false,
-          "usesKtx2": false,
-          "requiresKtx2": false,
-          "unknownRequiredExtensions": []
-        }
-      }
+      "thumbnailUrl": "public/assets/mint/passenger-bellhop/preview_image.webp"
     },
     "passenger-evening": {
       "source": {
         "manifestVersion": 1,
         "kind": "asset",
         "assetType": "model",
-        "assetId": "ks7eq80119q0ph7k8kcg52219s8ch06q"
+        "assetId": "ks776a1k703qvksc2bbstjd1zd8cfwsh"
       },
       "transform": {
         "position": [
@@ -767,14 +675,11 @@
           "role": "canonical_model",
           "format": "glb",
           "contentType": "model/gltf-binary",
-          "filename": "evening-guest-w98cgtzz-rigged.glb",
+          "filename": "penthouse-guest-zd8cfwsh-original.glb",
           "localPath": "public/assets/mint/passenger-evening/original_glb.glb",
           "loaderHint": "gltf",
-          "byteSize": 2679232,
-          "extensionsUsed": [
-            "KHR_materials_ior",
-            "KHR_materials_specular"
-          ],
+          "byteSize": 850972,
+          "extensionsUsed": [],
           "extensionsRequired": [],
           "usesDraco": false,
           "requiresDraco": false,
@@ -783,115 +688,26 @@
           "usesKtx2": false,
           "requiresKtx2": false,
           "unknownRequiredExtensions": []
+        },
+        "preview_image": {
+          "artifactId": "preview_image",
+          "role": "preview_image",
+          "format": "webp",
+          "contentType": "image/webp",
+          "filename": "penthouse-guest-zd8cfwsh-preview.webp",
+          "localPath": "public/assets/mint/passenger-evening/preview_image.webp",
+          "loaderHint": "image",
+          "byteSize": 29460
         }
-      }
-    },
-    "passenger-evening-idle": {
-      "source": {
-        "manifestVersion": 1,
-        "kind": "asset",
-        "assetType": "model",
-        "assetId": "ks7eq80119q0ph7k8kcg52219s8ch06q-idle"
       },
-      "transform": {
-        "position": [
-          0,
-          0,
-          0
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "scale": [
-          1,
-          1,
-          1
-        ]
-      },
-      "mode": "local_files",
-      "artifacts": {
-        "original_glb": {
-          "artifactId": "original_glb",
-          "role": "canonical_model",
-          "format": "glb",
-          "contentType": "model/gltf-binary",
-          "filename": "idle-6h8cgbtb.glb",
-          "localPath": "public/assets/mint/passenger-evening-idle/original_glb.glb",
-          "loaderHint": "gltf",
-          "byteSize": 2726268,
-          "extensionsUsed": [
-            "KHR_materials_ior",
-            "KHR_materials_specular"
-          ],
-          "extensionsRequired": [],
-          "usesDraco": false,
-          "requiresDraco": false,
-          "usesMeshopt": false,
-          "requiresMeshopt": false,
-          "usesKtx2": false,
-          "requiresKtx2": false,
-          "unknownRequiredExtensions": []
-        }
-      }
-    },
-    "passenger-evening-walk": {
-      "source": {
-        "manifestVersion": 1,
-        "kind": "asset",
-        "assetType": "model",
-        "assetId": "ks7eq80119q0ph7k8kcg52219s8ch06q-walk"
-      },
-      "transform": {
-        "position": [
-          0,
-          0,
-          0
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "scale": [
-          1,
-          1,
-          1
-        ]
-      },
-      "mode": "local_files",
-      "artifacts": {
-        "original_glb": {
-          "artifactId": "original_glb",
-          "role": "canonical_model",
-          "format": "glb",
-          "contentType": "model/gltf-binary",
-          "filename": "stylish-walk-inplace-8n8ch7a3.glb",
-          "localPath": "public/assets/mint/passenger-evening-walk/original_glb.glb",
-          "loaderHint": "gltf",
-          "byteSize": 2719260,
-          "extensionsUsed": [
-            "KHR_materials_ior",
-            "KHR_materials_specular"
-          ],
-          "extensionsRequired": [],
-          "usesDraco": false,
-          "requiresDraco": false,
-          "usesMeshopt": false,
-          "requiresMeshopt": false,
-          "usesKtx2": false,
-          "requiresKtx2": false,
-          "unknownRequiredExtensions": []
-        }
-      }
+      "thumbnailUrl": "public/assets/mint/passenger-evening/preview_image.webp"
     },
     "passenger-guest": {
       "source": {
         "manifestVersion": 1,
         "kind": "asset",
         "assetType": "model",
-        "assetId": "ks7ckkgemwngw52em3w9dz196n8cgwsj"
+        "assetId": "ks7334sg6nw6zsc709zn4xs5rh8cfckd"
       },
       "transform": {
         "position": [
@@ -917,14 +733,11 @@
           "role": "canonical_model",
           "format": "glb",
           "contentType": "model/gltf-binary",
-          "filename": "hotel-guest-4h8ch3jm-rigged.glb",
+          "filename": "hotel-guest-rh8cfckd-original.glb",
           "localPath": "public/assets/mint/passenger-guest/original_glb.glb",
           "loaderHint": "gltf",
-          "byteSize": 3151244,
-          "extensionsUsed": [
-            "KHR_materials_ior",
-            "KHR_materials_specular"
-          ],
+          "byteSize": 883212,
+          "extensionsUsed": [],
           "extensionsRequired": [],
           "usesDraco": false,
           "requiresDraco": false,
@@ -933,115 +746,26 @@
           "usesKtx2": false,
           "requiresKtx2": false,
           "unknownRequiredExtensions": []
+        },
+        "preview_image": {
+          "artifactId": "preview_image",
+          "role": "preview_image",
+          "format": "webp",
+          "contentType": "image/webp",
+          "filename": "hotel-guest-rh8cfckd-preview.webp",
+          "localPath": "public/assets/mint/passenger-guest/preview_image.webp",
+          "loaderHint": "image",
+          "byteSize": 36508
         }
-      }
-    },
-    "passenger-guest-idle": {
-      "source": {
-        "manifestVersion": 1,
-        "kind": "asset",
-        "assetType": "model",
-        "assetId": "ks7ckkgemwngw52em3w9dz196n8cgwsj-idle"
       },
-      "transform": {
-        "position": [
-          0,
-          0,
-          0
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "scale": [
-          1,
-          1,
-          1
-        ]
-      },
-      "mode": "local_files",
-      "artifacts": {
-        "original_glb": {
-          "artifactId": "original_glb",
-          "role": "canonical_model",
-          "format": "glb",
-          "contentType": "model/gltf-binary",
-          "filename": "idle-rd8chcj4.glb",
-          "localPath": "public/assets/mint/passenger-guest-idle/original_glb.glb",
-          "loaderHint": "gltf",
-          "byteSize": 3198284,
-          "extensionsUsed": [
-            "KHR_materials_ior",
-            "KHR_materials_specular"
-          ],
-          "extensionsRequired": [],
-          "usesDraco": false,
-          "requiresDraco": false,
-          "usesMeshopt": false,
-          "requiresMeshopt": false,
-          "usesKtx2": false,
-          "requiresKtx2": false,
-          "unknownRequiredExtensions": []
-        }
-      }
-    },
-    "passenger-guest-walk": {
-      "source": {
-        "manifestVersion": 1,
-        "kind": "asset",
-        "assetType": "model",
-        "assetId": "ks7ckkgemwngw52em3w9dz196n8cgwsj-walk"
-      },
-      "transform": {
-        "position": [
-          0,
-          0,
-          0
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "scale": [
-          1,
-          1,
-          1
-        ]
-      },
-      "mode": "local_files",
-      "artifacts": {
-        "original_glb": {
-          "artifactId": "original_glb",
-          "role": "canonical_model",
-          "format": "glb",
-          "contentType": "model/gltf-binary",
-          "filename": "stylish-walk-inplace-758chsr4.glb",
-          "localPath": "public/assets/mint/passenger-guest-walk/original_glb.glb",
-          "loaderHint": "gltf",
-          "byteSize": 3191260,
-          "extensionsUsed": [
-            "KHR_materials_ior",
-            "KHR_materials_specular"
-          ],
-          "extensionsRequired": [],
-          "usesDraco": false,
-          "requiresDraco": false,
-          "usesMeshopt": false,
-          "requiresMeshopt": false,
-          "usesKtx2": false,
-          "requiresKtx2": false,
-          "unknownRequiredExtensions": []
-        }
-      }
+      "thumbnailUrl": "public/assets/mint/passenger-guest/preview_image.webp"
     },
     "passenger-resident": {
       "source": {
         "manifestVersion": 1,
         "kind": "asset",
         "assetType": "model",
-        "assetId": "ks70tabvaefbnszec8hn8e0xe98chnc3"
+        "assetId": "ks7axxns726zv0bkmxh8wxby4d8cfgv5"
       },
       "transform": {
         "position": [
@@ -1067,14 +791,11 @@
           "role": "canonical_model",
           "format": "glb",
           "contentType": "model/gltf-binary",
-          "filename": "resident-es8cghxf-rigged.glb",
+          "filename": "resident-with-dog-4d8cfgv5-original.glb",
           "localPath": "public/assets/mint/passenger-resident/original_glb.glb",
           "loaderHint": "gltf",
-          "byteSize": 2698840,
-          "extensionsUsed": [
-            "KHR_materials_ior",
-            "KHR_materials_specular"
-          ],
+          "byteSize": 816840,
+          "extensionsUsed": [],
           "extensionsRequired": [],
           "usesDraco": false,
           "requiresDraco": false,
@@ -1083,115 +804,26 @@
           "usesKtx2": false,
           "requiresKtx2": false,
           "unknownRequiredExtensions": []
+        },
+        "preview_image": {
+          "artifactId": "preview_image",
+          "role": "preview_image",
+          "format": "webp",
+          "contentType": "image/webp",
+          "filename": "resident-with-dog-4d8cfgv5-preview.webp",
+          "localPath": "public/assets/mint/passenger-resident/preview_image.webp",
+          "loaderHint": "image",
+          "byteSize": 31210
         }
-      }
-    },
-    "passenger-resident-idle": {
-      "source": {
-        "manifestVersion": 1,
-        "kind": "asset",
-        "assetType": "model",
-        "assetId": "ks70tabvaefbnszec8hn8e0xe98chnc3-idle"
       },
-      "transform": {
-        "position": [
-          0,
-          0,
-          0
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "scale": [
-          1,
-          1,
-          1
-        ]
-      },
-      "mode": "local_files",
-      "artifacts": {
-        "original_glb": {
-          "artifactId": "original_glb",
-          "role": "canonical_model",
-          "format": "glb",
-          "contentType": "model/gltf-binary",
-          "filename": "idle-v98cg47g.glb",
-          "localPath": "public/assets/mint/passenger-resident-idle/original_glb.glb",
-          "loaderHint": "gltf",
-          "byteSize": 2747788,
-          "extensionsUsed": [
-            "KHR_materials_ior",
-            "KHR_materials_specular"
-          ],
-          "extensionsRequired": [],
-          "usesDraco": false,
-          "requiresDraco": false,
-          "usesMeshopt": false,
-          "requiresMeshopt": false,
-          "usesKtx2": false,
-          "requiresKtx2": false,
-          "unknownRequiredExtensions": []
-        }
-      }
-    },
-    "passenger-resident-walk": {
-      "source": {
-        "manifestVersion": 1,
-        "kind": "asset",
-        "assetType": "model",
-        "assetId": "ks70tabvaefbnszec8hn8e0xe98chnc3-walk"
-      },
-      "transform": {
-        "position": [
-          0,
-          0,
-          0
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "scale": [
-          1,
-          1,
-          1
-        ]
-      },
-      "mode": "local_files",
-      "artifacts": {
-        "original_glb": {
-          "artifactId": "original_glb",
-          "role": "canonical_model",
-          "format": "glb",
-          "contentType": "model/gltf-binary",
-          "filename": "elderly-shaky-walk-inplace-v18chcqx.glb",
-          "localPath": "public/assets/mint/passenger-resident-walk/original_glb.glb",
-          "loaderHint": "gltf",
-          "byteSize": 2734424,
-          "extensionsUsed": [
-            "KHR_materials_ior",
-            "KHR_materials_specular"
-          ],
-          "extensionsRequired": [],
-          "usesDraco": false,
-          "requiresDraco": false,
-          "usesMeshopt": false,
-          "requiresMeshopt": false,
-          "usesKtx2": false,
-          "requiresKtx2": false,
-          "unknownRequiredExtensions": []
-        }
-      }
+      "thumbnailUrl": "public/assets/mint/passenger-resident/preview_image.webp"
     },
     "passenger-server": {
       "source": {
         "manifestVersion": 1,
         "kind": "asset",
         "assetType": "model",
-        "assetId": "ks7b5b9wqvbbhpp6793czy2nbh8ch0s1"
+        "assetId": "ks7bzhkd9dk34ar1rek69f3na98cen0n"
       },
       "transform": {
         "position": [
@@ -1217,14 +849,11 @@
           "role": "canonical_model",
           "format": "glb",
           "contentType": "model/gltf-binary",
-          "filename": "restaurant-server-898ch0kr-rigged.glb",
+          "filename": "restaurant-server-a98cen0n-original.glb",
           "localPath": "public/assets/mint/passenger-server/original_glb.glb",
           "loaderHint": "gltf",
-          "byteSize": 2557620,
-          "extensionsUsed": [
-            "KHR_materials_ior",
-            "KHR_materials_specular"
-          ],
+          "byteSize": 700888,
+          "extensionsUsed": [],
           "extensionsRequired": [],
           "usesDraco": false,
           "requiresDraco": false,
@@ -1233,115 +862,26 @@
           "usesKtx2": false,
           "requiresKtx2": false,
           "unknownRequiredExtensions": []
+        },
+        "preview_image": {
+          "artifactId": "preview_image",
+          "role": "preview_image",
+          "format": "webp",
+          "contentType": "image/webp",
+          "filename": "restaurant-server-a98cen0n-preview.webp",
+          "localPath": "public/assets/mint/passenger-server/preview_image.webp",
+          "loaderHint": "image",
+          "byteSize": 38952
         }
-      }
-    },
-    "passenger-server-idle": {
-      "source": {
-        "manifestVersion": 1,
-        "kind": "asset",
-        "assetType": "model",
-        "assetId": "ks7b5b9wqvbbhpp6793czy2nbh8ch0s1-idle"
       },
-      "transform": {
-        "position": [
-          0,
-          0,
-          0
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "scale": [
-          1,
-          1,
-          1
-        ]
-      },
-      "mode": "local_files",
-      "artifacts": {
-        "original_glb": {
-          "artifactId": "original_glb",
-          "role": "canonical_model",
-          "format": "glb",
-          "contentType": "model/gltf-binary",
-          "filename": "idle-sx8cgyxs.glb",
-          "localPath": "public/assets/mint/passenger-server-idle/original_glb.glb",
-          "loaderHint": "gltf",
-          "byteSize": 2606568,
-          "extensionsUsed": [
-            "KHR_materials_ior",
-            "KHR_materials_specular"
-          ],
-          "extensionsRequired": [],
-          "usesDraco": false,
-          "requiresDraco": false,
-          "usesMeshopt": false,
-          "requiresMeshopt": false,
-          "usesKtx2": false,
-          "requiresKtx2": false,
-          "unknownRequiredExtensions": []
-        }
-      }
-    },
-    "passenger-server-walk": {
-      "source": {
-        "manifestVersion": 1,
-        "kind": "asset",
-        "assetType": "model",
-        "assetId": "ks7b5b9wqvbbhpp6793czy2nbh8ch0s1-walk"
-      },
-      "transform": {
-        "position": [
-          0,
-          0,
-          0
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "scale": [
-          1,
-          1,
-          1
-        ]
-      },
-      "mode": "local_files",
-      "artifacts": {
-        "original_glb": {
-          "artifactId": "original_glb",
-          "role": "canonical_model",
-          "format": "glb",
-          "contentType": "model/gltf-binary",
-          "filename": "casual-walk-inplace-md8cg8ym.glb",
-          "localPath": "public/assets/mint/passenger-server-walk/original_glb.glb",
-          "loaderHint": "gltf",
-          "byteSize": 2604972,
-          "extensionsUsed": [
-            "KHR_materials_ior",
-            "KHR_materials_specular"
-          ],
-          "extensionsRequired": [],
-          "usesDraco": false,
-          "requiresDraco": false,
-          "usesMeshopt": false,
-          "requiresMeshopt": false,
-          "usesKtx2": false,
-          "requiresKtx2": false,
-          "unknownRequiredExtensions": []
-        }
-      }
+      "thumbnailUrl": "public/assets/mint/passenger-server/preview_image.webp"
     },
     "passenger-worker-a": {
       "source": {
         "manifestVersion": 1,
         "kind": "asset",
         "assetType": "model",
-        "assetId": "ks79b18wsw8y1ba2pzvkh50eyx8cgt12"
+        "assetId": "ks76vq0axf3e5nm0sv7f33t98n8cft9g"
       },
       "transform": {
         "position": [
@@ -1367,14 +907,11 @@
           "role": "canonical_model",
           "format": "glb",
           "contentType": "model/gltf-binary",
-          "filename": "office-worker-a-yn8ch3vs-rigged.glb",
+          "filename": "office-worker-a-8n8cft9g-original.glb",
           "localPath": "public/assets/mint/passenger-worker-a/original_glb.glb",
           "loaderHint": "gltf",
-          "byteSize": 2357444,
-          "extensionsUsed": [
-            "KHR_materials_ior",
-            "KHR_materials_specular"
-          ],
+          "byteSize": 625336,
+          "extensionsUsed": [],
           "extensionsRequired": [],
           "usesDraco": false,
           "requiresDraco": false,
@@ -1383,115 +920,26 @@
           "usesKtx2": false,
           "requiresKtx2": false,
           "unknownRequiredExtensions": []
+        },
+        "preview_image": {
+          "artifactId": "preview_image",
+          "role": "preview_image",
+          "format": "webp",
+          "contentType": "image/webp",
+          "filename": "office-worker-a-8n8cft9g-preview.webp",
+          "localPath": "public/assets/mint/passenger-worker-a/preview_image.webp",
+          "loaderHint": "image",
+          "byteSize": 35536
         }
-      }
-    },
-    "passenger-worker-a-idle": {
-      "source": {
-        "manifestVersion": 1,
-        "kind": "asset",
-        "assetType": "model",
-        "assetId": "ks79b18wsw8y1ba2pzvkh50eyx8cgt12-idle"
       },
-      "transform": {
-        "position": [
-          0,
-          0,
-          0
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "scale": [
-          1,
-          1,
-          1
-        ]
-      },
-      "mode": "local_files",
-      "artifacts": {
-        "original_glb": {
-          "artifactId": "original_glb",
-          "role": "canonical_model",
-          "format": "glb",
-          "contentType": "model/gltf-binary",
-          "filename": "idle-hx8ch15t.glb",
-          "localPath": "public/assets/mint/passenger-worker-a-idle/original_glb.glb",
-          "loaderHint": "gltf",
-          "byteSize": 2404492,
-          "extensionsUsed": [
-            "KHR_materials_ior",
-            "KHR_materials_specular"
-          ],
-          "extensionsRequired": [],
-          "usesDraco": false,
-          "requiresDraco": false,
-          "usesMeshopt": false,
-          "requiresMeshopt": false,
-          "usesKtx2": false,
-          "requiresKtx2": false,
-          "unknownRequiredExtensions": []
-        }
-      }
-    },
-    "passenger-worker-a-walk": {
-      "source": {
-        "manifestVersion": 1,
-        "kind": "asset",
-        "assetType": "model",
-        "assetId": "ks79b18wsw8y1ba2pzvkh50eyx8cgt12-walk"
-      },
-      "transform": {
-        "position": [
-          0,
-          0,
-          0
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "scale": [
-          1,
-          1,
-          1
-        ]
-      },
-      "mode": "local_files",
-      "artifacts": {
-        "original_glb": {
-          "artifactId": "original_glb",
-          "role": "canonical_model",
-          "format": "glb",
-          "contentType": "model/gltf-binary",
-          "filename": "casual-walk-inplace-dx8cgdqe.glb",
-          "localPath": "public/assets/mint/passenger-worker-a-walk/original_glb.glb",
-          "loaderHint": "gltf",
-          "byteSize": 2404800,
-          "extensionsUsed": [
-            "KHR_materials_ior",
-            "KHR_materials_specular"
-          ],
-          "extensionsRequired": [],
-          "usesDraco": false,
-          "requiresDraco": false,
-          "usesMeshopt": false,
-          "requiresMeshopt": false,
-          "usesKtx2": false,
-          "requiresKtx2": false,
-          "unknownRequiredExtensions": []
-        }
-      }
+      "thumbnailUrl": "public/assets/mint/passenger-worker-a/preview_image.webp"
     },
     "passenger-worker-b": {
       "source": {
         "manifestVersion": 1,
         "kind": "asset",
         "assetType": "model",
-        "assetId": "ks7892eqzqtwpgyjve4e240vkx8chj1r"
+        "assetId": "ks77vtpccbrc89ts9xxa42xvah8cemb5"
       },
       "transform": {
         "position": [
@@ -1517,14 +965,11 @@
           "role": "canonical_model",
           "format": "glb",
           "contentType": "model/gltf-binary",
-          "filename": "office-worker-b-3x8cgw2n-rigged.glb",
+          "filename": "office-worker-b-ah8cemb5-original.glb",
           "localPath": "public/assets/mint/passenger-worker-b/original_glb.glb",
           "loaderHint": "gltf",
-          "byteSize": 2565700,
-          "extensionsUsed": [
-            "KHR_materials_ior",
-            "KHR_materials_specular"
-          ],
+          "byteSize": 862640,
+          "extensionsUsed": [],
           "extensionsRequired": [],
           "usesDraco": false,
           "requiresDraco": false,
@@ -1533,108 +978,19 @@
           "usesKtx2": false,
           "requiresKtx2": false,
           "unknownRequiredExtensions": []
+        },
+        "preview_image": {
+          "artifactId": "preview_image",
+          "role": "preview_image",
+          "format": "webp",
+          "contentType": "image/webp",
+          "filename": "office-worker-b-ah8cemb5-preview.webp",
+          "localPath": "public/assets/mint/passenger-worker-b/preview_image.webp",
+          "loaderHint": "image",
+          "byteSize": 37124
         }
-      }
-    },
-    "passenger-worker-b-idle": {
-      "source": {
-        "manifestVersion": 1,
-        "kind": "asset",
-        "assetType": "model",
-        "assetId": "ks7892eqzqtwpgyjve4e240vkx8chj1r-idle"
       },
-      "transform": {
-        "position": [
-          0,
-          0,
-          0
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "scale": [
-          1,
-          1,
-          1
-        ]
-      },
-      "mode": "local_files",
-      "artifacts": {
-        "original_glb": {
-          "artifactId": "original_glb",
-          "role": "canonical_model",
-          "format": "glb",
-          "contentType": "model/gltf-binary",
-          "filename": "idle-wh8chc3x.glb",
-          "localPath": "public/assets/mint/passenger-worker-b-idle/original_glb.glb",
-          "loaderHint": "gltf",
-          "byteSize": 2614644,
-          "extensionsUsed": [
-            "KHR_materials_ior",
-            "KHR_materials_specular"
-          ],
-          "extensionsRequired": [],
-          "usesDraco": false,
-          "requiresDraco": false,
-          "usesMeshopt": false,
-          "requiresMeshopt": false,
-          "usesKtx2": false,
-          "requiresKtx2": false,
-          "unknownRequiredExtensions": []
-        }
-      }
-    },
-    "passenger-worker-b-walk": {
-      "source": {
-        "manifestVersion": 1,
-        "kind": "asset",
-        "assetType": "model",
-        "assetId": "ks7892eqzqtwpgyjve4e240vkx8chj1r-walk"
-      },
-      "transform": {
-        "position": [
-          0,
-          0,
-          0
-        ],
-        "rotation": [
-          0,
-          0,
-          0
-        ],
-        "scale": [
-          1,
-          1,
-          1
-        ]
-      },
-      "mode": "local_files",
-      "artifacts": {
-        "original_glb": {
-          "artifactId": "original_glb",
-          "role": "canonical_model",
-          "format": "glb",
-          "contentType": "model/gltf-binary",
-          "filename": "stylish-walk-inplace-zx8chzdh.glb",
-          "localPath": "public/assets/mint/passenger-worker-b-walk/original_glb.glb",
-          "loaderHint": "gltf",
-          "byteSize": 2605416,
-          "extensionsUsed": [
-            "KHR_materials_ior",
-            "KHR_materials_specular"
-          ],
-          "extensionsRequired": [],
-          "usesDraco": false,
-          "requiresDraco": false,
-          "usesMeshopt": false,
-          "requiresMeshopt": false,
-          "usesKtx2": false,
-          "requiresKtx2": false,
-          "unknownRequiredExtensions": []
-        }
-      }
+      "thumbnailUrl": "public/assets/mint/passenger-worker-b/preview_image.webp"
     },
     "tower": {
       "source": {

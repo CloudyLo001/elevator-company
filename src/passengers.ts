@@ -63,10 +63,6 @@ const BOB_FREQ = 8.5;
 /** Minimum horizontal gap between two people standing or walking. */
 const MIN_SEPARATION = 0.54;
 
-function hypot2(ax: number, az: number, bx: number, bz: number): number {
-  return Math.hypot(ax - bx, az - bz);
-}
-
 export interface FloorHeights {
   /** Cab floor height above the cab group's origin. */
   cabOffset: number;
@@ -95,10 +91,6 @@ export function updatePassengers(
 
     let x: number, y: number, z: number, yaw: number;
     let bob = 0;
-    let walking = false;
-    // Metres covered so far in the current walk, used to drive the stride so
-    // footfalls track real movement instead of wall-clock time.
-    let walked = 0;
 
     if (t < c.boardStart) {
       // Waiting in the origin diorama, facing the landing doors.
@@ -113,8 +105,6 @@ export function updatePassengers(
       y = boardFloor + (cabFloor - boardFloor) * u;
       yaw = walkYaw(sx - fx, sz - fz);
       bob = Math.sin(u * Math.PI * BOB_FREQ) * 0.02;
-      walking = true;
-      walked = hypot2(fx, fz, sx, sz) * u;
     } else if (t < c.turnEnd) {
       // The classic elevator about-face after stepping in.
       const u = smooth((t - c.boardEnd) / (c.turnEnd - c.boardEnd));
@@ -134,8 +124,6 @@ export function updatePassengers(
       y = cabFloor + (exitFloor - cabFloor) * u;
       yaw = walkYaw(tx - sx, tz - sz);
       bob = Math.sin(u * Math.PI * BOB_FREQ) * 0.02;
-      walking = true;
-      walked = hypot2(sx, sz, tx, tz) * u;
     } else {
       // Arrived: stands in the destination room, looking back at the car.
       x = tx;
@@ -143,8 +131,6 @@ export function updatePassengers(
       y = exitFloor;
       yaw = 0;
     }
-    root.userData.walking = walking;
-    root.userData.walked = walked;
 
     root.position.set(x, y + bob, z);
     root.rotation.y = yaw;
