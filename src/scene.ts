@@ -955,7 +955,7 @@ export function buildWorld(assets: AssetMap): World {
   // style can change without swapping an asset. Clips against a rising plane,
   // so it assembles from the ground up with nothing animated per-member.
   const towerClip = new THREE.Plane(new THREE.Vector3(0, -1, 0), 0);
-  const finaleTower = buildFinaleTower(TOWER_HEIGHT, 8.6, towerClip);
+  const finaleTower = buildFinaleTower(TOWER_HEIGHT, towerClip);
   const tower = finaleTower.group;
   const towerMaterials = finaleTower.materials;
   tower.visible = false;

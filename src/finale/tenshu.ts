@@ -11,7 +11,7 @@
  */
 
 import * as THREE from "three";
-import { Bld, cornPt, faceRot, mergeGeos, NS, type Vec2, type Vec3 } from "./builder";
+import { AP, Bld, cornPt, faceRot, mergeGeos, NS, STEP, type Vec2, type Vec3 } from "./builder";
 
 /** One roof's shape parameters. */
 export interface RoofOpts {
@@ -323,9 +323,24 @@ export function buildTenshu(): TenshuGeos {
           1.2
         );
       }
-      // Window band: a recessed dark opening under the head band.
+      // 窓 — a row of square openings set into each face, just under the head
+      // band. Placed on the face plane rather than driven through the building,
+      // or they protrude from both sides as shelves.
       const wy = st.y1 - 0.46;
-      timber.box(0, wy, 0, half * 1.7, 0.34, st.R * 1.99, rot, 1);
+      const a = (k + 0.5) * STEP;
+      const inset = AP * st.R - 0.02;
+      const wins = 2;
+      const wW = half * 0.44,
+        wH = 0.32;
+      for (let q = 0; q < wins; q++) {
+        // Spread the openings across the face, leaving a margin at each hip.
+        const off = (-0.5 + (q + 0.5) / wins) * half * 1.5;
+        const px = Math.cos(a) * inset - Math.sin(rot) * 0 + off * Math.cos(rot);
+        const pz = Math.sin(a) * inset - off * Math.sin(rot);
+        // Surround first, then the darker opening recessed inside it.
+        timber.box(px, wy, pz, wW * 1.34, wH * 1.32, 0.06, rot, 1);
+        plaster.box(px, wy, pz, wW, wH, 0.1, rot, 1);
+      }
     }
 
     // ---------- roof ----------
