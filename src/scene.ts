@@ -3,6 +3,7 @@ import type { AssetMap } from "./assets-load";
 import { BUTTON_FLOORS, PASSENGERS, STOPS, ROOF_STORY, storyY } from "./content";
 import { buildFinaleTower } from "./finale/tower";
 import { buildLandscape, type Landscape } from "./finale/landscape";
+import { addOfficeProps, addPenthouseProps } from "./room-props";
 
 export const DOOR_Z = -1.12;
 export const DOOR_CLOSED_X = 0.6;
@@ -32,6 +33,12 @@ const ROOM_FRONT_Z = -1.45;
  * enough that the two surfaces never contend for the same depth.
  */
 const FLOOR_SLAB_LIFT = 0.015;
+/**
+ * Lift wall and lobby surfaces in the approach shot. Well below white on
+ * purpose: under a flat ambient of 6 anything near white clips out and the
+ * room loses all its structure.
+ */
+const LOBBY_WALL = 0xa9aeb2;
 
 export interface World {
   scene: THREE.Scene;
@@ -581,7 +588,7 @@ export function buildWorld(assets: AssetMap): World {
       wallShape.holes.push(doorHole);
       const wall = new THREE.Mesh(
         new THREE.ExtrudeGeometry(wallShape, { depth: 0.12, bevelEnabled: false }),
-        new THREE.MeshStandardMaterial({ color: 0xe9e6df, roughness: 0.85 }),
+        new THREE.MeshStandardMaterial({ color: LOBBY_WALL, roughness: 0.85 }),
       );
       wall.position.z = -1.38;
       holder.add(wall);
@@ -649,6 +656,21 @@ export function buildWorld(assets: AssetMap): World {
         // Generated foyer: its open face is seated against the lift wall so
         // the visitor stands inside the room looking toward the doors.
         holder.add(foyer);
+        // The generated foyer's albedo is near white, which under flat ambient
+        // clips out to a featureless white field — the wall, its panels and the
+        // ceiling all disappear into each other. Tinting the material scales
+        // that albedo down so the room reads as light grey with its structure
+        // visible. It is one mesh, so the tint necessarily reaches the whole
+        // room; the wood floor laid over it keeps its own colour.
+        foyer.traverse((obj) => {
+          const mesh = obj as THREE.Mesh;
+          if (!mesh.isMesh) return;
+          const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+          for (const m of mats) {
+            const std = m as THREE.MeshStandardMaterial;
+            if (std.color) std.color.setHex(LOBBY_WALL);
+          }
+        });
         const room = new THREE.Box3().setFromObject(foyer);
         foyer.position.z = -1.34 - room.max.z;
         // Clear of the shaft slab, which also sits at y = 0 and would
@@ -659,7 +681,7 @@ export function buildWorld(assets: AssetMap): World {
         const placed = new THREE.Box3().setFromObject(foyer);
         const backWall = new THREE.Mesh(
           new THREE.BoxGeometry(placed.max.x - placed.min.x + 1.5, CEIL_Y, 0.12),
-          new THREE.MeshStandardMaterial({ color: 0xd8cfc0, roughness: 0.9 }),
+          new THREE.MeshStandardMaterial({ color: LOBBY_WALL, roughness: 0.9 }),
         );
         // Keep it inside the ceiling's span, otherwise the sky shows in the
         // strip between the ceiling's far edge and the wall.
@@ -678,7 +700,7 @@ export function buildWorld(assets: AssetMap): World {
         for (const sx of [-sideX, sideX]) {
           const side = new THREE.Mesh(
             new THREE.BoxGeometry(0.12, CEIL_Y, LOBBY_DEPTH),
-            new THREE.MeshStandardMaterial({ color: 0xd8cfc0, roughness: 0.9 }),
+            new THREE.MeshStandardMaterial({ color: LOBBY_WALL, roughness: 0.9 }),
           );
           side.position.set(sx, CEIL_Y / 2, LOBBY_MID);
           holder.add(side);
@@ -747,7 +769,7 @@ export function buildWorld(assets: AssetMap): World {
       const ceiling = new THREE.Mesh(
         new THREE.BoxGeometry(24, 0.12, LOBBY_DEPTH),
         new THREE.MeshStandardMaterial({
-          color: 0xdedbd4,
+          color: LOBBY_WALL,
           roughness: 0.95,
           emissive: 0x3a3833,
           emissiveIntensity: 1,
@@ -789,19 +811,16 @@ export function buildWorld(assets: AssetMap): World {
         holder.add(fill);
       }
 
-      // Wall detailing so the bay still reads as a lobby from a distance:
-      // stone skirting and a pair of darker panels flanking the doors.
-      // Detailing sits proud of the wall's camera-facing plane (z = -1.38),
-      // not inside the extrusion.
+      // Wall detailing so the bay still reads as a lobby from a distance: a
+      // pair of panels flanking the doors. Detailing sits proud of the wall's
+      // camera-facing plane (z = -1.38), not inside the extrusion.
+      //
+      // No skirting board: a dark stone strip along the foot of the wall read
+      // as a brown band across the bottom of the approach shot rather than as
+      // trim.
       const WALL_FACE = -1.4;
-      const skirt = new THREE.Mesh(
-        new THREE.BoxGeometry(6, 0.11, 0.06),
-        new THREE.MeshStandardMaterial({ color: 0x54402e, roughness: 0.6 }),
-      );
-      skirt.position.set(0, 0.055, WALL_FACE);
-      holder.add(skirt);
       const panelMat = new THREE.MeshStandardMaterial({
-        color: 0xd9d2c6,
+        color: 0xcfd2d4,
         roughness: 0.7,
       });
       for (const px of [-2.45, 2.45]) {
@@ -1197,8 +1216,13 @@ export function buildWorld(assets: AssetMap): World {
     const zFront = Math.min(box.max.z, DIORAMA_Z + 0.06);
     const depth = Math.max(0.5, zFront - zBack);
 
+    const floorTone = dioramaFloorColor(stop.mood.ambient);
+    // The penthouse is meant to read as the luxurious floor of the building,
+    // and a slate floor was doing the opposite. Pull it toward pale stone.
+    if (story === 60) floorTone.lerp(new THREE.Color(0xd6d0c2), 0.62);
+
     const floorMat = new THREE.MeshStandardMaterial({
-      color: dioramaFloorColor(stop.mood.ambient),
+      color: floorTone,
       roughness: 0.98,
       metalness: 0,
       // The scene environment is what puts the sheen on everything else here.
@@ -1216,6 +1240,12 @@ export function buildWorld(assets: AssetMap): World {
       (zBack + zFront) / 2 - holder.position.z,
     );
     holder.add(slab);
+
+    // Set dressing, laid over the generated room for the same reason the slab
+    // is: nothing inside a single-mesh room can be changed on its own.
+    const standY = top - holder.position.y + FLOOR_SLAB_LIFT;
+    if (story === 12) addOfficeProps(holder, standY);
+    if (story === 60) addPenthouseProps(holder, standY, standY + 3.0);
   }
 
   return {
