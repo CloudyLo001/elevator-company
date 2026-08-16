@@ -26,6 +26,12 @@ const ROOM_WIDTH = 11;
  * up. Seated behind the cab there is nothing left to intersect.
  */
 const ROOM_FRONT_Z = -1.45;
+/**
+ * How far the laid floor slab sits above each room's own floor. Small enough
+ * that passengers standing at the measured floor height show no gap, large
+ * enough that the two surfaces never contend for the same depth.
+ */
+const FLOOR_SLAB_LIFT = 0.015;
 
 export interface World {
   scene: THREE.Scene;
@@ -631,7 +637,13 @@ export function buildWorld(assets: AssetMap): World {
       const LOBBY_FRONT = -17;
       const LOBBY_DEPTH = LOBBY_BACK - LOBBY_FRONT;
       const LOBBY_MID = (LOBBY_BACK + LOBBY_FRONT) / 2;
-      const CEIL_Y = 3.9;
+      // Sits just under the generated foyer's own ceiling, which measures
+      // about 3.35. Held higher, a band opened up between the two through
+      // which the foyer's roof structure — it carries geometry all the way to
+      // 8.2 — was visible as stripes across the top of the approach shot.
+      // Below it, this slab is simply the ceiling and everything above is
+      // hidden behind it.
+      const CEIL_Y = 3.26;
 
       if (foyer) {
         // Generated foyer: its open face is seated against the lift wall so
@@ -1197,7 +1209,10 @@ export function buildWorld(assets: AssetMap): World {
     slab.receiveShadow = true;
     slab.position.set(
       (box.min.x + box.max.x) / 2 - holder.position.x,
-      top - holder.position.y - 0.03,
+      // Sit the slab's face a hair PROUD of the room's own floor. Landing it
+      // exactly on `top` put two large parallel surfaces at identical depth,
+      // which z-fights into bands sweeping across the floor as the car moves.
+      top - holder.position.y - 0.03 + FLOOR_SLAB_LIFT,
       (zBack + zFront) / 2 - holder.position.z,
     );
     holder.add(slab);

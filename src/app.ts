@@ -512,6 +512,13 @@ export class App {
     this.atEnd = state.finale > 0.62;
     document.getElementById("sky-bar")!.classList.toggle("available", this.atEnd);
 
+    // True from the moment the car reaches the roof, not just once the tower
+    // sequence starts — the rooftop stop looks out over the same world.
+    const finaleWorld = state.finale > 0.25;
+    const roofView = state.displayStory >= ROOF_STORY || finaleWorld;
+    // Weather belongs to that world, so it runs whenever the world is showing.
+    const outside = Math.max(dayBlend, roofView ? 1 : 0);
+
     // The tower rises with the scroll, and REBUILD replays it on demand.
     let build = smoothstep((state.finale - 0.3) / 0.5);
     if (this.rebuildStart !== null) {
@@ -530,8 +537,8 @@ export class App {
       (w.buildLine.material as THREE.MeshBasicMaterial).opacity = 0.45;
     }
 
-    const rainOn = this.weatherKey === "rain" ? dayBlend : 0;
-    const snowOn = this.weatherKey === "snow" ? dayBlend : 0;
+    const rainOn = this.weatherKey === "rain" ? outside : 0;
+    const snowOn = this.weatherKey === "snow" ? outside : 0;
     w.rain.visible = rainOn > 0.01;
     w.snow.visible = snowOn > 0.01;
     (w.rain.material as THREE.LineBasicMaterial).opacity = 0.45 * rainOn;
@@ -539,14 +546,32 @@ export class App {
     if (w.rain.visible) this.fallRain(w.rain, dt);
     if (w.snow.visible) this.fallSnow(w.snow, dt);
 
+    // Sky, fog and depth range for the rooftop world. Applied wherever that
+    // world is showing, so the roof stop and the finale share one backdrop
+    // instead of the stop keeping the old star field.
+    if (roofView) {
+      if (w.scene.fog) {
+        const fog = w.scene.fog as THREE.Fog;
+        fog.near = w.landscape.fogNear;
+        fog.far = w.landscape.fogFar;
+        fog.color.copy(w.landscape.fogColor);
+      }
+      (w.scene.background as THREE.Color).copy(w.landscape.fogColor);
+      // Far has to reach the horizon of a world about 17x the shaft's size.
+      // Near can only be pushed out once the car is gone — at the rooftop stop
+      // the camera is still inside it, and a 1m near plane would clip the walls.
+      this.setCameraRange(finaleWorld ? 1 : 0.1, 20000);
+    } else {
+      this.setCameraRange(0.05, 900);
+    }
+
     // --- view modes & finale ---
-    const finaleWorld = state.finale > 0.25;
     w.tower.visible = finaleWorld;
     // The ground sits at y=0, exactly where the foyer is, so it must not exist
-    // outside the finale.
-    w.landscape.group.visible = finaleWorld;
-    w.landscape.sky.visible = finaleWorld;
-    if (finaleWorld) {
+    // anywhere below the roof.
+    w.landscape.group.visible = roofView;
+    w.landscape.sky.visible = roofView;
+    if (roofView) {
       w.landscape.update(dt);
       if (this.landThemeKey !== this.timeKey) {
         this.landThemeKey = this.timeKey;
@@ -606,22 +631,9 @@ export class App {
         .set(0, ROOF_Y + 1.3, -5)
         .lerp(FINALE_LOOK_END, Math.min(1, u * 1.6));
       tFov = 44 + u * 6;
-      // The finale world is ~17x the size of the shaft, so it needs both its
-      // own fog distances and a far plane that can reach the horizon. Near is
-      // pulled forward too — nothing is close to the camera out here, and a
-      // 0.05 near against a 20000 far would wreck depth precision.
-      if (w.scene.fog) {
-        const fog = w.scene.fog as THREE.Fog;
-        fog.near = w.landscape.fogNear;
-        fog.far = w.landscape.fogFar;
-        fog.color.copy(w.landscape.fogColor);
-      }
-      (w.scene.background as THREE.Color).copy(w.landscape.fogColor);
-      this.setCameraRange(1, 20000);
     } else {
-      this.setCameraRange(0.05, 900);
       this.skyfade.style.opacity = "0";
-      if (w.scene.fog) {
+      if (w.scene.fog && !roofView) {
         (w.scene.fog as THREE.Fog).near = 26;
         (w.scene.fog as THREE.Fog).far = 110;
       }

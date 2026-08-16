@@ -18,6 +18,35 @@ interface Choreo {
   exitY: number;
 }
 
+/**
+ * z of the doorway, and how wide a lane through it the walk may use.
+ *
+ * Walking straight from a diorama position to a cab slot cuts the corner: the
+ * line crosses the door plane well outside the aperture, so a passenger passes
+ * through the door frame rather than the opening. Every walk is therefore
+ * routed through a waypoint in the doorway, which is also how people actually
+ * board — funnelling toward the middle and spreading out once inside.
+ */
+const GATE_Z = -1.12;
+const GATE_SPREAD = 0.3;
+
+/** Position along `from -> gate -> to`, with the gate at the halfway mark. */
+function throughDoorway(
+  fx: number,
+  fz: number,
+  tx: number,
+  tz: number,
+  gx: number,
+  u: number,
+): [number, number] {
+  if (u < 0.5) {
+    const v = u * 2;
+    return [fx + (gx - fx) * v, fz + (GATE_Z - fz) * v];
+  }
+  const v = (u - 0.5) * 2;
+  return [gx + (tx - gx) * v, GATE_Z + (tz - GATE_Z) * v];
+}
+
 const choreos: Choreo[] = PASSENGERS.map((def, i) => {
   const bw = windowForStory(def.boardStory);
   const ew = windowForStory(def.exitStory);
@@ -100,10 +129,12 @@ export function updatePassengers(
       yaw = 0;
     } else if (t < c.boardEnd) {
       const u = smooth((t - c.boardStart) / (c.boardEnd - c.boardStart));
-      x = fx + (sx - fx) * u;
-      z = fz + (sz - fz) * u;
+      const gx = sx * GATE_SPREAD;
+      [x, z] = throughDoorway(fx, fz, sx, sz, gx, u);
       y = boardFloor + (cabFloor - boardFloor) * u;
-      yaw = walkYaw(sx - fx, sz - fz);
+      // Face the leg being walked, not the overall direction, or the turn
+      // through the doorway reads as sliding sideways.
+      yaw = u < 0.5 ? walkYaw(gx - fx, GATE_Z - fz) : walkYaw(sx - gx, sz - GATE_Z);
       bob = Math.sin(u * Math.PI * BOB_FREQ) * 0.02;
     } else if (t < c.turnEnd) {
       // The classic elevator about-face after stepping in.
@@ -119,10 +150,10 @@ export function updatePassengers(
       yaw = FACE_DOORS;
     } else if (t < c.exitEnd) {
       const u = smooth((t - c.exitStart) / (c.exitEnd - c.exitStart));
-      x = sx + (tx - sx) * u;
-      z = sz + (tz - sz) * u;
+      const gx = sx * GATE_SPREAD;
+      [x, z] = throughDoorway(sx, sz, tx, tz, gx, u);
       y = cabFloor + (exitFloor - cabFloor) * u;
-      yaw = walkYaw(tx - sx, tz - sz);
+      yaw = u < 0.5 ? walkYaw(gx - sx, GATE_Z - sz) : walkYaw(tx - gx, tz - GATE_Z);
       bob = Math.sin(u * Math.PI * BOB_FREQ) * 0.02;
     } else {
       // Arrived: stands in the destination room, looking back at the car.
