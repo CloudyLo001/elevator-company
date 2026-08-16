@@ -1,5 +1,4 @@
 import * as THREE from "three";
-import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import Lenis from "lenis";
 import type { World } from "./scene";
 import { STOPS, ROOF_STORY, storyY, type PassengerDef } from "./content";
@@ -8,6 +7,7 @@ import { updatePassengers, passengerByKey } from "./passengers";
 import { Overlay } from "./overlay";
 import { DOOR_CLOSED_X, DOOR_OPEN_X, drawLandingIndicator } from "./scene";
 import { LAND_THEMES } from "./finale/landscape";
+import { flattenLook } from "./flat-look";
 
 const ROOF_Y = storyY(ROOF_STORY);
 const FINALE_LOOK_END = new THREE.Vector3(0, 96, 0);
@@ -108,8 +108,6 @@ export class App {
 
   // scratch
   private bg = new THREE.Color(0x494f4a);
-  private ambientTarget = new THREE.Color();
-  private glowTarget = new THREE.Color();
   private skyTarget = new THREE.Color();
   private tintTarget = new THREE.Color();
   // Rooftop state: sky, weather, build progress and free-look camera.
@@ -145,11 +143,17 @@ export class App {
       900,
     );
 
-    // Metals need an environment to reflect or they render near-black.
-    const pmrem = new THREE.PMREMGenerator(this.renderer);
-    world.scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-    world.scene.environmentIntensity = 0.5;
-    pmrem.dispose();
+    // No environment map. Nothing is metallic or glossy any more, so there is
+    // nothing left that needs something to reflect — and the environment was
+    // itself a source of sheen on every smooth surface.
+    world.scene.environment = null;
+
+    // Tone mapping off. ACES compresses and desaturates highlights, which
+    // fights "keep everything its own colour" under flat ambient light.
+    this.renderer.toneMapping = THREE.NoToneMapping;
+    this.renderer.toneMappingExposure = 1;
+
+    flattenLook(world.scene, this.renderer);
 
     this.finaleCurve = new THREE.CatmullRomCurve3(
       [
@@ -285,21 +289,6 @@ export class App {
     this.camera.near = near;
     this.camera.far = far;
     this.camera.updateProjectionMatrix();
-  }
-
-  /**
-   * The ride is graded with ACES, which suits the interiors but desaturates
-   * exactly the warm highlights the rooftop world is built on — and that
-   * world's light intensities are tuned for no tone mapping at all. Swap it
-   * for the finale and swap back on the way out.
-   *
-   * Changing this recompiles every material, so it only fires on an actual
-   * change; the one at the world swap lands under the white flash.
-   */
-  private setToneMapping(mode: THREE.ToneMapping, exposure: number): void {
-    if (this.renderer.toneMapping === mode) return;
-    this.renderer.toneMapping = mode;
-    this.renderer.toneMappingExposure = exposure;
   }
 
   /** Sky, weather, rebuild and free-look, all live only on the rooftop. */
@@ -502,18 +491,12 @@ export class App {
       this.skyTarget.lerp(this.tintTarget, dayBlend);
     }
     this.bg.lerp(this.skyTarget, k);
-    this.ambientTarget.set(mood.ambient);
-    this.glowTarget.set(mood.glow);
-    w.hemi.intensity = THREE.MathUtils.lerp(0.85, preset.hemiIntensity, dayBlend);
-    w.keyLight.intensity = THREE.MathUtils.lerp(1.1, preset.lightIntensity, dayBlend);
-    if (dayBlend > 0.01) {
-      w.keyLight.color.lerp(this.tintTarget.set(preset.light), k);
-      w.hemi.color.lerp(this.tintTarget.set(preset.hemi), k);
-    }
+    // The per-floor moods no longer touch the lights. Under a single neutral
+    // ambient, tinting it would tint the entire world rather than one room, and
+    // every surface is meant to read as its own colour. The moods still drive
+    // the sky and fog below, which is where they now do their work.
     (w.scene.background as THREE.Color).copy(this.bg);
     if (w.scene.fog) (w.scene.fog as THREE.Fog).color.copy(this.bg);
-    w.ambient.color.lerp(this.ambientTarget, k);
-    w.cabLight.color.lerp(this.glowTarget, k * 0.6);
 
     const altitude = THREE.MathUtils.clamp(state.cabY / ROOF_Y, 0, 1);
     const riding = Math.max(altitude * 0.85, state.finale > 0 ? 0.95 : 0);
@@ -569,26 +552,11 @@ export class App {
         this.landThemeKey = this.timeKey;
         w.landscape.setTheme(LAND_THEMES[this.timeKey]);
       }
-      // The land themes carry their own lighting, and it is the lighting that
-      // makes the warm paper look — the terrain's vertex colours are cool
-      // greens, and it is the key and hemisphere that turn them sepia. Applied
-      // after the ride's own mood block so it wins out here.
-      const lt = LAND_THEMES[this.timeKey];
-      const el = lt.sun.el * Math.PI * 0.5;
-      const az = lt.sun.az * Math.PI;
-      const D = w.landscape.fogFar * 0.4;
-      w.keyLight.position.set(
-        Math.cos(az) * Math.cos(el) * D,
-        Math.sin(el) * D,
-        Math.sin(az) * Math.cos(el) * D,
-      );
-      w.keyLight.color.setHex(lt.sun.color);
-      w.keyLight.intensity = lt.sun.int;
-      w.hemi.color.setHex(lt.hemi.sky);
-      w.hemi.groundColor.setHex(lt.hemi.ground);
-      w.hemi.intensity = lt.hemi.int;
-      w.ambient.color.setHex(lt.amb.color);
-      w.ambient.intensity = lt.amb.int;
+      // The land themes still drive the sky dome, fog and the terrain and grass
+      // tints via setTheme above. Their sun and hemisphere are deliberately not
+      // applied: the rooftop is lit by the same flat ambient as the rest of the
+      // world now, so the tower and hills read as flat colour with no raking
+      // light across them.
     }
     w.shell.visible = shaftView && !finaleWorld && state.enter >= 1;
     w.shaft.visible = !finaleWorld;
@@ -650,10 +618,8 @@ export class App {
       }
       (w.scene.background as THREE.Color).copy(w.landscape.fogColor);
       this.setCameraRange(1, 20000);
-      this.setToneMapping(THREE.NoToneMapping, 1);
     } else {
       this.setCameraRange(0.05, 900);
-      this.setToneMapping(THREE.ACESFilmicToneMapping, 1.05);
       this.skyfade.style.opacity = "0";
       if (w.scene.fog) {
         (w.scene.fog as THREE.Fog).near = 26;

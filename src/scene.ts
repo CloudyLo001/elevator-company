@@ -9,6 +9,12 @@ export const DOOR_CLOSED_X = 0.6;
 export const DOOR_OPEN_X = 1.78;
 export const DIORAMA_Z = -1.4;
 const TOWER_HEIGHT = 256;
+/**
+ * How far apart a generated room's side walls are pushed. Wide enough that the
+ * wall ends sit outside the sightline through the doorway from every camera the
+ * ride uses, so a floor never reads as a small box you are looking into.
+ */
+const ROOM_WIDTH = 11;
 
 export interface World {
   scene: THREE.Scene;
@@ -237,6 +243,61 @@ function makeWoodFloorTexture(): THREE.CanvasTexture {
   tex.anisotropy = 8;
   tex.colorSpace = THREE.SRGBColorSpace;
   return tex;
+}
+
+/**
+ * Push a room's side walls apart without resizing anything standing in it.
+ *
+ * Scaling the room in x would widen the walls and fatten every piece of
+ * furniture with them, because a generated room is a single mesh. So this
+ * displaces instead of scaling: vertices out near the left and right extremes
+ * are translated outward by a fixed amount, and everything inboard of the
+ * threshold is left exactly where it is. Walls move, furniture does not.
+ *
+ * Wall, floor and ceiling polygons span the threshold and simply stretch to
+ * follow, which is what widens the room. Their texture stretches with them in
+ * that outer band — the cost of keeping the furniture honest.
+ *
+ * Normals are untouched on purpose: the surfaces being moved face ±x, ±y or
+ * ±z, and a translation along x leaves those unchanged.
+ */
+function widenRoomWalls(model: THREE.Object3D, targetWidth: number): void {
+  model.updateWorldMatrix(true, true);
+  model.traverse((obj) => {
+    const mesh = obj as THREE.Mesh;
+    if (!mesh.isMesh) return;
+    const geo = mesh.geometry;
+    const pos = geo.attributes.position as THREE.BufferAttribute;
+    if (!pos) return;
+
+    // Work in the geometry's own space, converting the wanted world width
+    // through this mesh's x scale.
+    const sx = new THREE.Vector3().setFromMatrixColumn(mesh.matrixWorld, 0).length();
+    if (sx < 1e-6) return;
+
+    geo.computeBoundingBox();
+    const bb = geo.boundingBox!;
+    const cx = (bb.min.x + bb.max.x) / 2;
+    const halfLocal = (bb.max.x - bb.min.x) / 2;
+    if (halfLocal < 1e-6) return;
+
+    const growWorld = targetWidth / 2 - halfLocal * sx;
+    if (growWorld <= 0) return;
+    const growLocal = growWorld / sx;
+
+    // Everything past this is wall and the outer reaches of floor and ceiling.
+    // Furniture sits comfortably inboard of it.
+    const threshold = halfLocal * 0.72;
+
+    for (let i = 0; i < pos.count; i++) {
+      const d = pos.getX(i) - cx;
+      if (d > threshold) pos.setX(i, pos.getX(i) + growLocal);
+      else if (d < -threshold) pos.setX(i, pos.getX(i) - growLocal);
+    }
+    pos.needsUpdate = true;
+    geo.computeBoundingBox();
+    geo.computeBoundingSphere();
+  });
 }
 
 /**
@@ -586,6 +647,20 @@ export function buildWorld(assets: AssetMap): World {
         );
         holder.add(backWall);
 
+        // Close the sides too. The ceiling spans 24m but the generated foyer's
+        // own walls are only about 11m apart, so without these the strip
+        // between them showed the bare scene background as two dark wedges in
+        // the upper corners of the approach shot.
+        const sideX = (placed.max.x - placed.min.x + 1.5) / 2;
+        for (const sx of [-sideX, sideX]) {
+          const side = new THREE.Mesh(
+            new THREE.BoxGeometry(0.12, CEIL_Y, LOBBY_DEPTH),
+            new THREE.MeshStandardMaterial({ color: 0xd8cfc0, roughness: 0.9 }),
+          );
+          side.position.set(sx, CEIL_Y / 2, LOBBY_MID);
+          holder.add(side);
+        }
+
         // Clean oak floor laid over the generated one, whose baked shading
         // shows as hard wedges once our own lights fall on it.
         const deckBack = -1.34;
@@ -672,7 +747,11 @@ export function buildWorld(assets: AssetMap): World {
             new THREE.BoxGeometry(2.4, 0.05, 0.34),
             stripMat,
           );
-          strip.position.set(sx, CEIL_Y - 0.09, z);
+          // Hang the strips a clear 5cm below the ceiling slab. At the previous
+          // offset their tops sat 5mm under it, and two large parallel surfaces
+          // that close z-fight into a shimmering ribbed pattern across the
+          // whole ceiling.
+          strip.position.set(sx, CEIL_Y - 0.14, z);
           holder.add(strip);
         }
       }
@@ -801,6 +880,10 @@ export function buildWorld(assets: AssetMap): World {
     // front face just behind the door plane so nothing pokes into the cab.
     // The landing is special: its aperture wall (bbox +z side after yaw)
     // sits AT the door plane so the cab doors show inside its steel frame.
+    // Spread the side walls out past the doorway so their ends are never in
+    // frame. Done before the room is seated, since it changes the bounds.
+    widenRoomWalls(model, ROOM_WIDTH);
+
     const roomBox = new THREE.Box3().setFromObject(model);
     model.position.z =
       stop.dioramaKey === "landing"
