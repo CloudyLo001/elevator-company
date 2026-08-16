@@ -239,6 +239,19 @@ function makeWoodFloorTexture(): THREE.CanvasTexture {
   return tex;
 }
 
+/**
+ * A floor tone for a diorama, derived from that stop's ambient mood so each
+ * floor keeps its identity. Darkened and pulled toward neutral: the mood colour
+ * describes light in the room, and reused raw it reads as a lit panel rather
+ * than something being stood on.
+ */
+function dioramaFloorColor(ambient: number): THREE.Color {
+  const c = new THREE.Color(ambient);
+  const hsl = { h: 0, s: 0, l: 0 };
+  c.getHSL(hsl);
+  return c.setHSL(hsl.h, hsl.s * 0.55, Math.min(0.34, hsl.l * 0.5));
+}
+
 /** Landing floor-indicator screen above the doors. */
 export function drawLandingIndicator(
   world: World,
@@ -795,11 +808,10 @@ export function buildWorld(assets: AssetMap): World {
         : -0.06 - roomBox.max.z;
     scene.add(holder);
     dioramas.set(stop.story, holder);
-
-    const glow = new THREE.PointLight(stop.mood.glow, 3.2, 9, 1.8);
-    glow.position.set(0, storyY(stop.story) + 2.3, DIORAMA_Z - 1.6);
-    scene.add(glow);
-    dioramaLights.set(stop.story, glow);
+    // No room glow: it pooled a coloured hotspot across surfaces that are
+    // already pure reflection, which is most of what read as haze. The rooms
+    // now take only the scene's ambient and hemisphere. `dioramaLights` stays
+    // in the World so the rest of the app keeps its shape; it is simply empty.
   }
 
   // ---------- shaft (x-ray view) ----------
@@ -1053,6 +1065,48 @@ export function buildWorld(assets: AssetMap): World {
         [-1.4, -3.4],
       ]),
     );
+  }
+
+  // ---------- solid diorama floors ----------
+  // The generated rooms are a single mesh with metalness 1, so their floor has
+  // no diffuse colour at all — it renders as environment smeared across rough
+  // metal, which reads as a blur rather than a surface. Lay an opaque slab over
+  // it at the height the passengers actually stand on, the same way the ground
+  // floor gets a clean oak floor over its baked one.
+  for (const [story, holder] of dioramas) {
+    if (story === 0) continue;
+    const stop = STOPS.find((s) => s.story === story);
+    if (!stop) continue;
+
+    const top = floorTops.get(story) ?? storyY(story);
+    holder.updateWorldMatrix(true, true);
+    const box = new THREE.Box3().setFromObject(holder);
+    if (!isFinite(box.min.x) || box.isEmpty()) continue;
+
+    // Slightly overfill the room so no seam of the original floor shows at the
+    // walls, and stop just short of the door plane so it never enters the cab.
+    const pad = 0.3;
+    const width = box.max.x - box.min.x + pad * 2;
+    const zBack = box.min.z - pad;
+    const zFront = Math.min(box.max.z, DIORAMA_Z + 0.06);
+    const depth = Math.max(0.5, zFront - zBack);
+
+    const floorMat = new THREE.MeshStandardMaterial({
+      color: dioramaFloorColor(stop.mood.ambient),
+      roughness: 0.98,
+      metalness: 0,
+      // The scene environment is what puts the sheen on everything else here.
+      // A floor asked to be solid must not take any of it.
+      envMapIntensity: 0,
+    });
+    const slab = new THREE.Mesh(new THREE.BoxGeometry(width, 0.06, depth), floorMat);
+    slab.receiveShadow = true;
+    slab.position.set(
+      (box.min.x + box.max.x) / 2 - holder.position.x,
+      top - holder.position.y - 0.03,
+      (zBack + zFront) / 2 - holder.position.z,
+    );
+    holder.add(slab);
   }
 
   return {
