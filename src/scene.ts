@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import type { AssetMap } from "./assets-load";
 import { BUTTON_FLOORS, PASSENGERS, STOPS, ROOF_STORY, storyY } from "./content";
+import { buildFinaleTower } from "./finale/tower";
 
 export const DOOR_Z = -1.12;
 export const DOOR_CLOSED_X = 0.6;
@@ -40,6 +41,8 @@ export interface World {
   towerClip: THREE.Plane;
   /** Height and plan width of the finale tower, for the build animation. */
   towerSize: { height: number; width: number };
+  /** The tower's materials, for the night-to-paper palette cross-fade. */
+  towerMaterials: THREE.MeshStandardMaterial[];
   /** Glowing line riding the top of the built section. */
   buildLine: THREE.Mesh;
   rain: THREE.LineSegments;
@@ -948,26 +951,16 @@ export function buildWorld(assets: AssetMap): World {
   scene.add(roofDeck);
 
   // ---------- tower (finale reveal) ----------
-  const tower = new THREE.Group();
-  const towerModel = assets.get("tower");
-  // Clips everything above its height, so the tower can be built upward.
+  // Generated, not loaded: the keep is built from primitives at runtime so the
+  // style can change without swapping an asset. Clips against a rising plane,
+  // so it assembles from the ground up with nothing animated per-member.
   const towerClip = new THREE.Plane(new THREE.Vector3(0, -1, 0), 0);
-  if (towerModel) {
-    tower.add(towerModel);
-    towerModel.traverse((obj) => {
-      const mesh = obj as THREE.Mesh;
-      if (!mesh.isMesh) return;
-      const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-      for (const mat of mats) mat.clippingPlanes = [towerClip];
-    });
-  }
+  const finaleTower = buildFinaleTower(TOWER_HEIGHT, 8.6, towerClip);
+  const tower = finaleTower.group;
+  const towerMaterials = finaleTower.materials;
   tower.visible = false;
   scene.add(tower);
-  const towerBox = new THREE.Box3().setFromObject(tower);
-  const towerSize = {
-    height: Math.max(1, towerBox.max.y - towerBox.min.y),
-    width: Math.max(1, towerBox.max.x - towerBox.min.x),
-  };
+  const towerSize = finaleTower.size;
 
   // Bright seam riding the top of the finished section.
   const buildLine = new THREE.Mesh(
@@ -1079,6 +1072,7 @@ export function buildWorld(assets: AssetMap): World {
     passengerRoots,
     towerClip,
     towerSize,
+    towerMaterials,
     buildLine,
     rain,
     snow,
