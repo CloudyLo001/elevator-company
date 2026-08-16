@@ -326,14 +326,40 @@ export function addPenthouseProps(
  * screens and read as clutter.
  */
 export function addOfficeProps(holder: THREE.Group, floorY: number): void {
+  // ---------- monitors ----------
+  // The desk's own screens are thin, near-wireframe geometry that reads as
+  // dark slivers. Solid white panels are set just in front of them, sized to
+  // cover: measured, the originals span x -0.9 to 0.8 and reach 1.67 above the
+  // floor, sitting between z -3.46 and -3.85 (local -2.06 to -2.45).
+  const white = matte(0xf1f0ec, 0.9);
+  const stand = matte(0xdedcd6, 0.85);
+  const DESK_TOP = floorY + 0.92;
+  for (const [mx, mz] of [
+    [-0.62, -2.12],
+    [0.36, -2.2],
+  ]) {
+    box(holder, stand, 0.34, 0.02, 0.2, mx, DESK_TOP + 0.01, mz);
+    box(holder, stand, 0.06, 0.24, 0.06, mx, DESK_TOP + 0.13, mz);
+    const panel = box(holder, white, 0.86, 0.56, 0.035, mx, DESK_TOP + 0.53, mz);
+    panel.rotation.x = -0.05;
+  }
+
+  // ---------- shelving ----------
   const caseMat = matte(OAK_MID, 0.95);
-  const backMat = matte(0x4c463c, 1);
+  // Close to the office's own wall tone, so the panel that hides the original
+  // banding does not itself read as a dark slab pinned behind the shelves.
+  const backMat = matte(0xa9aca3, 1);
   const X = 2.45;
-  const Z = -5.02;
+  // The built-in shelving's nearest face measures at world -6.31, so the case
+  // has to sit in front of that. At -6.42 the original's coloured bands showed
+  // straight through it as black and red streaks across the shelves.
+  const Z = -4.62;
   const W = 1.9;
   const HGT = 2.15;
 
-  box(holder, backMat, W, HGT, 0.05, X, floorY + HGT / 2, Z - 0.16);
+  // Wider and taller than the case itself: the original's coloured bands run
+  // past the shelving on both sides, and anything they overhang still shows.
+  box(holder, backMat, W + 3.2, HGT + 0.7, 0.05, X + 0.35, floorY + (HGT + 0.7) / 2, Z - 0.16);
   box(holder, caseMat, 0.09, HGT, 0.36, X - W / 2, floorY + HGT / 2, Z);
   box(holder, caseMat, 0.09, HGT, 0.36, X + W / 2, floorY + HGT / 2, Z);
   box(holder, caseMat, W, 0.08, 0.36, X, floorY + HGT, Z);
