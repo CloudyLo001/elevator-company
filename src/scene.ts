@@ -15,6 +15,17 @@ const TOWER_HEIGHT = 256;
  * ride uses, so a floor never reads as a small box you are looking into.
  */
 const ROOM_WIDTH = 11;
+/**
+ * Where a generated room's front face is seated.
+ *
+ * Must clear the back of the cab, which reaches z = -1.37. Rooms used to sit
+ * at -0.06, putting their frontmost 1.31 units inside the car — survivable
+ * while the rooms were large and that region was empty wall, but once they were
+ * scaled to true size the furniture came forward with it and ended up standing
+ * among the passengers, and the car visibly passed through each room on the way
+ * up. Seated behind the cab there is nothing left to intersect.
+ */
+const ROOM_FRONT_Z = -1.45;
 
 export interface World {
   scene: THREE.Scene;
@@ -888,7 +899,7 @@ export function buildWorld(assets: AssetMap): World {
     model.position.z =
       stop.dioramaKey === "landing"
         ? 0.16 - roomBox.max.z
-        : -0.06 - roomBox.max.z;
+        : ROOM_FRONT_Z - roomBox.max.z;
     scene.add(holder);
     dioramas.set(stop.story, holder);
     // No room glow: it pooled a coloured hotspot across surfaces that are
