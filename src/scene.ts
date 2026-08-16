@@ -2,6 +2,7 @@ import * as THREE from "three";
 import type { AssetMap } from "./assets-load";
 import { BUTTON_FLOORS, PASSENGERS, STOPS, ROOF_STORY, storyY } from "./content";
 import { buildFinaleTower } from "./finale/tower";
+import { buildLandscape, type Landscape } from "./finale/landscape";
 
 export const DOOR_Z = -1.12;
 export const DOOR_CLOSED_X = 0.6;
@@ -43,6 +44,8 @@ export interface World {
   towerSize: { height: number; width: number };
   /** The tower's materials, for the night-to-paper palette cross-fade. */
   towerMaterials: THREE.MeshStandardMaterial[];
+  /** Terrain, ridges, grass, stones and sky dome for the finale. */
+  landscape: Landscape;
   /** Glowing line riding the top of the built section. */
   buildLine: THREE.Mesh;
   rain: THREE.LineSegments;
@@ -962,6 +965,14 @@ export function buildWorld(assets: AssetMap): World {
   scene.add(tower);
   const towerSize = finaleTower.size;
 
+  // The world the tower stands in. Authored at the keep's native scale and
+  // scaled by the same factor, so hills, grass and building stay in the
+  // proportions they were designed for.
+  const landscape = buildLandscape({ scale: tower.scale.x });
+  landscape.group.visible = false;
+  landscape.sky.visible = false;
+  scene.add(landscape.group, landscape.sky);
+
   // Bright seam riding the top of the finished section.
   const buildLine = new THREE.Mesh(
     new THREE.BoxGeometry(1, 0.5, 1),
@@ -1073,6 +1084,7 @@ export function buildWorld(assets: AssetMap): World {
     towerClip,
     towerSize,
     towerMaterials,
+    landscape,
     buildLine,
     rain,
     snow,

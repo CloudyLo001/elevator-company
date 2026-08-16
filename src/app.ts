@@ -7,6 +7,7 @@ import { evaluate, progressForStopDwell, type RideState } from "./timeline";
 import { updatePassengers, passengerByKey } from "./passengers";
 import { Overlay } from "./overlay";
 import { DOOR_CLOSED_X, DOOR_OPEN_X, drawLandingIndicator } from "./scene";
+import { LAND_THEMES } from "./finale/landscape";
 
 const ROOF_Y = storyY(ROOF_STORY);
 const FINALE_LOOK_END = new THREE.Vector3(0, 96, 0);
@@ -100,6 +101,9 @@ export class App {
   private targetLook = new THREE.Vector3();
   private skyfade: HTMLDivElement;
   private finaleCurve: THREE.CatmullRomCurve3;
+  /** Which land theme is currently painted, so the sky is only repainted on
+   *  an actual change rather than every frame. */
+  private landThemeKey: TimeKey | null = null;
   private cardOpenFor: string | null = null;
 
   // scratch
@@ -272,6 +276,30 @@ export class App {
     addEventListener("click", () => viewMenu.classList.remove("open"));
 
     this.bindRooftopControls();
+  }
+
+  /** Swap the camera's depth range, only when it actually changes — every
+   *  assignment costs a projection matrix rebuild. */
+  private setCameraRange(near: number, far: number): void {
+    if (this.camera.near === near && this.camera.far === far) return;
+    this.camera.near = near;
+    this.camera.far = far;
+    this.camera.updateProjectionMatrix();
+  }
+
+  /**
+   * The ride is graded with ACES, which suits the interiors but desaturates
+   * exactly the warm highlights the rooftop world is built on — and that
+   * world's light intensities are tuned for no tone mapping at all. Swap it
+   * for the finale and swap back on the way out.
+   *
+   * Changing this recompiles every material, so it only fires on an actual
+   * change; the one at the world swap lands under the white flash.
+   */
+  private setToneMapping(mode: THREE.ToneMapping, exposure: number): void {
+    if (this.renderer.toneMapping === mode) return;
+    this.renderer.toneMapping = mode;
+    this.renderer.toneMappingExposure = exposure;
   }
 
   /** Sky, weather, rebuild and free-look, all live only on the rooftop. */
@@ -531,6 +559,37 @@ export class App {
     // --- view modes & finale ---
     const finaleWorld = state.finale > 0.25;
     w.tower.visible = finaleWorld;
+    // The ground sits at y=0, exactly where the foyer is, so it must not exist
+    // outside the finale.
+    w.landscape.group.visible = finaleWorld;
+    w.landscape.sky.visible = finaleWorld;
+    if (finaleWorld) {
+      w.landscape.update(dt);
+      if (this.landThemeKey !== this.timeKey) {
+        this.landThemeKey = this.timeKey;
+        w.landscape.setTheme(LAND_THEMES[this.timeKey]);
+      }
+      // The land themes carry their own lighting, and it is the lighting that
+      // makes the warm paper look — the terrain's vertex colours are cool
+      // greens, and it is the key and hemisphere that turn them sepia. Applied
+      // after the ride's own mood block so it wins out here.
+      const lt = LAND_THEMES[this.timeKey];
+      const el = lt.sun.el * Math.PI * 0.5;
+      const az = lt.sun.az * Math.PI;
+      const D = w.landscape.fogFar * 0.4;
+      w.keyLight.position.set(
+        Math.cos(az) * Math.cos(el) * D,
+        Math.sin(el) * D,
+        Math.sin(az) * Math.cos(el) * D,
+      );
+      w.keyLight.color.setHex(lt.sun.color);
+      w.keyLight.intensity = lt.sun.int;
+      w.hemi.color.setHex(lt.hemi.sky);
+      w.hemi.groundColor.setHex(lt.hemi.ground);
+      w.hemi.intensity = lt.hemi.int;
+      w.ambient.color.setHex(lt.amb.color);
+      w.ambient.intensity = lt.amb.int;
+    }
     w.shell.visible = shaftView && !finaleWorld && state.enter >= 1;
     w.shaft.visible = !finaleWorld;
     w.slabs.visible = !finaleWorld;
@@ -579,11 +638,22 @@ export class App {
         .set(0, ROOF_Y + 1.3, -5)
         .lerp(FINALE_LOOK_END, Math.min(1, u * 1.6));
       tFov = 44 + u * 6;
+      // The finale world is ~17x the size of the shaft, so it needs both its
+      // own fog distances and a far plane that can reach the horizon. Near is
+      // pulled forward too — nothing is close to the camera out here, and a
+      // 0.05 near against a 20000 far would wreck depth precision.
       if (w.scene.fog) {
-        (w.scene.fog as THREE.Fog).near = 60;
-        (w.scene.fog as THREE.Fog).far = 700;
+        const fog = w.scene.fog as THREE.Fog;
+        fog.near = w.landscape.fogNear;
+        fog.far = w.landscape.fogFar;
+        fog.color.copy(w.landscape.fogColor);
       }
+      (w.scene.background as THREE.Color).copy(w.landscape.fogColor);
+      this.setCameraRange(1, 20000);
+      this.setToneMapping(THREE.NoToneMapping, 1);
     } else {
+      this.setCameraRange(0.05, 900);
+      this.setToneMapping(THREE.ACESFilmicToneMapping, 1.05);
       this.skyfade.style.opacity = "0";
       if (w.scene.fog) {
         (w.scene.fog as THREE.Fog).near = 26;
