@@ -101,6 +101,18 @@ export class App {
   private targetLook = new THREE.Vector3();
   private skyfade: HTMLDivElement;
   private finaleCurve: THREE.CatmullRomCurve3;
+  // --- adaptive resolution ---
+  /** Pixel ratios this display may use, coarsest first. */
+  private prLadder: number[] = [1];
+  private prIndex = 0;
+  /** Recent frame times, in ms, for the resolution decision. */
+  private prSamples: number[] = [];
+  /** Frames to wait before changing again, so a change cannot chase itself. */
+  private prHold = 0;
+  /** Highest ladder index still believed sustainable on this machine. */
+  private prCeiling = 0;
+  /** Whether the last change was a step up, so a step down can blame it. */
+  private prTriedUp = false;
   /** Which land theme is currently painted, so the sky is only repainted on
    *  an actual change rather than every frame. */
   private landThemeKey: TimeKey | null = null;
@@ -128,7 +140,15 @@ export class App {
   ) {
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
     // Supersample low-DPI displays a bit so straight steel edges stay crisp.
-    this.renderer.setPixelRatio(Math.min(Math.max(devicePixelRatio, 1.5), 2.5));
+    // Resolution is adaptive — see stepResolution(). This is the ceiling, and
+    // where it starts: the old fixed value, which supersamples low-DPI displays
+    // so straight steel edges stay crisp.
+    this.prLadder = [1, 1.25, 1.5, 1.75, 2, 2.25, 2.5].filter(
+      (v) => v <= Math.min(Math.max(devicePixelRatio, 1.5), 2.5) + 1e-6,
+    );
+    this.prIndex = this.prLadder.length - 1;
+    this.prCeiling = this.prIndex;
+    this.renderer.setPixelRatio(this.prLadder[this.prIndex]);
     this.renderer.setSize(innerWidth, innerHeight);
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -282,6 +302,64 @@ export class App {
     this.bindRooftopControls();
   }
 
+  /**
+   * Adaptive resolution.
+   *
+   * The ride is fill-rate bound, not geometry bound: at 24k triangles it still
+   * dropped to 47fps purely because the canvas was being rendered at 2.25x the
+   * pixels it needed. Rather than pick one pixel ratio for every machine, watch
+   * the frame times and move along the ladder.
+   *
+   * The two directions are judged on different statistics, because vsync makes
+   * the obvious test useless. On a 60Hz display frame time is floored at about
+   * 16.7ms no matter how much headroom there is, so "is the median fast" can
+   * never come back true and the ladder would only ever ratchet downward.
+   *
+   * What separates a comfortable 60fps from a struggling one is not the median
+   * but the spread: locked to vsync the worst frames sit just above the
+   * interval, while a display that is barely keeping up throws long ones. So
+   * stepping up asks whether the SLOW frames are still short, and stepping down
+   * asks whether the typical frame has fallen behind. The gap between the two
+   * leaves a band where nothing happens, so a machine near the boundary settles
+   * rather than pulsing between resolutions.
+   */
+  private stepResolution(dt: number): void {
+    if (this.prLadder.length < 2) return;
+    if (this.prHold > 0) {
+      this.prHold--;
+      return;
+    }
+    this.prSamples.push(dt * 1000);
+    if (this.prSamples.length < 45) return;
+
+    this.prSamples.sort((a, b) => a - b);
+    const median = this.prSamples[Math.floor(this.prSamples.length / 2)];
+    const p95 = this.prSamples[Math.floor(this.prSamples.length * 0.95)];
+    this.prSamples.length = 0;
+
+    let next = this.prIndex;
+    if (median > 20 && this.prIndex > 0) {
+      next--;
+      // A level that was just tried and immediately gave frames back is not
+      // sustainable on this machine, so stop offering it. Without this the
+      // ladder flaps — measured here, it cycled 1.5 to 1.25 and back roughly
+      // every nine seconds, which reads as the picture pulsing in sharpness.
+      if (this.prTriedUp) this.prCeiling = next;
+      this.prTriedUp = false;
+    } else if (p95 < 18.5 && this.prIndex < this.prCeiling) {
+      next++;
+      this.prTriedUp = true;
+    }
+    if (next === this.prIndex) return;
+
+    this.prIndex = next;
+    this.renderer.setPixelRatio(this.prLadder[next]);
+    this.renderer.setSize(innerWidth, innerHeight);
+    // Long enough for the new resolution's cost to show up in the samples
+    // before it is judged again.
+    this.prHold = 90;
+  }
+
   /** Swap the camera's depth range, only when it actually changes — every
    *  assignment costs a projection matrix rebuild. */
   private setCameraRange(near: number, far: number): void {
@@ -387,6 +465,7 @@ export class App {
   private frame(timeMs: number): void {
     this.lenis.raf(timeMs);
     const dt = Math.min(this.clock.getDelta(), 0.1);
+    this.stepResolution(dt);
     const max = Math.max(1, document.body.scrollHeight - innerHeight);
     const p = THREE.MathUtils.clamp(this.lenis.scroll / max, 0, 1);
     const state = evaluate(p);

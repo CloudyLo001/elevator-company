@@ -19,7 +19,11 @@ html, body {
   overscroll-behavior: none;
 }
 
-#scroll-space { height: 1500vh; }
+/* The ride's whole length. At 1500vh the sixty-two storeys went by faster than
+   they could be looked at; tripling it gives every beat three times the
+   scrolling, and incidentally thirds the distance the animation advances per
+   frame, which is its own smoothing. */
+#scroll-space { height: 4500vh; }
 
 #scene {
   position: fixed;
