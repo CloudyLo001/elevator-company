@@ -23,6 +23,27 @@ interface NormalizeRule {
   sink?: number;
 }
 
+/**
+ * Ceiling height every generated room is sized to. Everything else in the
+ * scene is real-world metres — passengers 1.62–1.74, cab 2.75, doorway 2.62 —
+ * so the rooms have to be too, or their furniture arrives at the wrong size.
+ */
+const ROOM_CEILING = 3.0;
+
+/**
+ * Fit a room by its ceiling rather than its width.
+ *
+ * Width-fitting was the original bug: forcing every room to one width scaled
+ * each by a different amount, and because a room is a single mesh, its
+ * furniture inherited that error — hence the oversized desk, chairs and bag.
+ *
+ * A plain height rule undershoots, because the bounding box also contains
+ * structure above the ceiling and a plinth below the floor. `boxToInterior` is
+ * each room's measured box-height / floor-to-ceiling ratio, which corrects for
+ * exactly that. Re-measure if an asset is regenerated.
+ */
+const roomHeight = (boxToInterior: number): number => ROOM_CEILING * boxToInterior;
+
 const RULES: Record<string, NormalizeRule> = {
   "elevator-cab": { height: 2.75, rotY: Math.PI },
   "door-panel": { exact: [1.2, 2.62, 0.07] },
@@ -39,14 +60,15 @@ const RULES: Record<string, NormalizeRule> = {
   "passenger-server": { height: 1.68 },
   "passenger-evening": { height: 1.72 },
   foyer: { width: 11, rotY: 0 },
-  // Rooms are wider than the sightline through the doorway, so their side
-  // walls fall outside the frame and each floor reads as part of a real
-  // building rather than a shallow box seen end to end.
-  "diorama-hotel": { width: 8.8, rotY: 0 },
-  "diorama-office": { width: 8.8, rotY: 0 },
-  "diorama-apartment": { width: 8.8, rotY: 0 },
-  "diorama-restaurant": { width: 8.8, rotY: 0 },
-  "diorama-penthouse": { width: 8.8, rotY: 0 },
+  // Rooms are fitted by ceiling height, so each keeps the width its own
+  // proportions give it — roughly 4.6–6.8m, still far wider than the 1.2m
+  // doorway, so the side walls stay outside the sightline and no floor reads
+  // as a shallow box seen end to end.
+  "diorama-hotel": { height: roomHeight(1.678), rotY: 0 },
+  "diorama-office": { height: roomHeight(1.349), rotY: 0 },
+  "diorama-apartment": { height: roomHeight(1.798), rotY: 0 },
+  "diorama-restaurant": { height: roomHeight(1.324), rotY: 0 },
+  "diorama-penthouse": { height: roomHeight(1.143), rotY: 0 },
 };
 
 export type AssetMap = Map<string, THREE.Group>;
