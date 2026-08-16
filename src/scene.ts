@@ -1217,12 +1217,18 @@ export function buildWorld(assets: AssetMap): World {
     const depth = Math.max(0.5, zFront - zBack);
 
     const floorTone = dioramaFloorColor(stop.mood.ambient);
-    // The penthouse is meant to read as the luxurious floor of the building,
-    // and a slate floor was doing the opposite. Pull it toward pale stone.
-    if (story === 60) floorTone.lerp(new THREE.Color(0xd6d0c2), 0.62);
+    // The penthouse is boarded in oak rather than laid in stone, so it takes
+    // the same plank texture the ground-floor foyer uses, in a lighter tone.
+    const woodFloor = story === 60;
+    if (woodFloor) floorTone.setHex(0xc8a678);
 
     const floorMat = new THREE.MeshStandardMaterial({
       color: floorTone,
+      map: woodFloor ? (() => {
+        const t = makeWoodFloorTexture();
+        t.repeat.set(2.4, 1.4);
+        return t;
+      })() : null,
       roughness: 0.98,
       metalness: 0,
       // The scene environment is what puts the sheen on everything else here.
