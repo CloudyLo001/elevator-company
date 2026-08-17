@@ -284,16 +284,24 @@ html, body {
   text-align: center;
   pointer-events: none;
   transition: opacity 0.5s ease;
-  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6), 0 4px 26px rgba(0, 0, 0, 0.45);
+  /* The approach shot is a near-white wall, so small type needs a much
+     heavier shadow than a dark backdrop would call for: a tight dark core to
+     give each letter an edge, then a wide soft pool to lift it off the wall. */
+  text-shadow:
+    0 0 3px rgba(0, 0, 0, 0.9),
+    0 0 7px rgba(0, 0, 0, 0.75),
+    0 1px 2px rgba(0, 0, 0, 0.9),
+    0 3px 14px rgba(0, 0, 0, 0.7),
+    0 8px 36px rgba(0, 0, 0, 0.5);
 }
-.intro-kicker { font-size: 10px; letter-spacing: 0.42em; margin-bottom: 12px; opacity: 0.85; }
+.intro-kicker { font-size: 14px; letter-spacing: 0.42em; margin-bottom: 14px; opacity: 1; }
 .intro-title { font-family: var(--serif); font-size: clamp(48px, 8vw, 96px); letter-spacing: 0.24em; font-weight: 500; }
-.intro-sub { font-family: var(--serif); font-style: italic; font-size: 15px; margin-top: 10px; opacity: 0.9; }
+.intro-sub { font-family: var(--serif); font-style: italic; font-size: 21px; margin-top: 14px; opacity: 1; }
 .scroll-hint {
   margin-top: 7vh;
-  font-size: 9px;
+  font-size: 13px;
   letter-spacing: 0.4em;
-  opacity: 0.75;
+  opacity: 0.95;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -467,8 +475,8 @@ html, body {
 .button-tip { font-size: 12px; padding: 7px 12px; }
 
 .intro-kicker { font-size: 12px; }
-.intro-sub { font-size: 18px; }
-.scroll-hint { font-size: 11px; }
+.intro-sub { font-size: 24px; }
+.scroll-hint { font-size: 15px; }
 
 .outro-kicker { font-size: 11px; }
 .outro-copy { font-size: 17px; }

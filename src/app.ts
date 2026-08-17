@@ -188,7 +188,11 @@ export class App {
       [
         new THREE.Vector3(0, ROOF_Y + 1.6, 0.9),
         new THREE.Vector3(0, ROOF_Y + 2.6, -7.5),
-        new THREE.Vector3(30, ROOF_Y + 10, 70),
+        // Was (30, ROOF_Y + 10, 70), which is still up beside the roof — so
+        // three of the four control points sat in the close view and the wide
+        // shot only arrived in the last fraction. Moved most of the way out,
+        // so the retreat is underway by the middle of the sequence.
+        new THREE.Vector3(78, 208, 182),
         new THREE.Vector3(150, 152, 336),
       ],
       false,
@@ -696,7 +700,13 @@ export class App {
       const flash = Math.max(0, 1 - Math.abs(u - 0.25) / 0.11);
       this.skyfade.style.opacity = String(flash * flash);
 
-      this.finaleCurve.getPoint(THREE.MathUtils.clamp(u, 0, 1), tPos);
+      // Pull away from the roof faster than the rest of the finale advances.
+      // The curve's first two control points sit just above the deck, so an
+      // even walk along it spends most of the sequence in a close view before
+      // the wide shot arrives; the exponent front-loads the retreat and leaves
+      // the long tail of the finale on the view that is worth looking at.
+      const camU = Math.pow(THREE.MathUtils.clamp(u, 0, 1), 0.55);
+      this.finaleCurve.getPoint(camU, tPos);
       // Once the tower is out, the pointer leans the camera and dragging
       // orbits it, with the wheel pulling in and out.
       const parallax = smoothstep((u - 0.35) / 0.65);

@@ -1147,6 +1147,25 @@ export function buildWorld(assets: AssetMap): World {
     root.traverse((o) => {
       o.userData.passengerKey = def.key;
     });
+    // The hotel guest's suitcase is generated as a bare frame with no panels,
+    // so it reads as see-through. Fill it. Measured in her local space, the
+    // frame occupies x -0.34..-0.17, y 0.36..0.83, z -0.21..0.31; this body is
+    // inset slightly inside that so the frame still reads as its edging.
+    if (def.key === "passenger-guest") {
+      const caseBody = new THREE.Mesh(
+        new THREE.BoxGeometry(0.15, 0.44, 0.49),
+        new THREE.MeshStandardMaterial({
+          color: 0xa2855e,
+          roughness: 1,
+          metalness: 0,
+          envMapIntensity: 0,
+        }),
+      );
+      caseBody.position.set(-0.255, 0.595, 0.05);
+      caseBody.userData.passengerKey = def.key;
+      root.add(caseBody);
+    }
+
     scene.add(root);
     passengerRoots.set(def.key, root);
   }

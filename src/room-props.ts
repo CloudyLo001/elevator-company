@@ -331,17 +331,21 @@ export function addOfficeProps(holder: THREE.Group, floorY: number): void {
   // dark slivers. Solid white panels are set just in front of them, sized to
   // cover: measured, the originals span x -0.9 to 0.8 and reach 1.67 above the
   // floor, sitting between z -3.46 and -3.85 (local -2.06 to -2.45).
-  const white = matte(0xf1f0ec, 0.9);
-  const stand = matte(0xdedcd6, 0.85);
+  const bezel = matte(0x14151a, 0.85);
+  const glass = matte(0xbcd7ea, 0.6);
   const DESK_TOP = floorY + 0.92;
   for (const [mx, mz] of [
     [-0.62, -2.12],
     [0.36, -2.2],
   ]) {
-    box(holder, stand, 0.34, 0.02, 0.2, mx, DESK_TOP + 0.01, mz);
-    box(holder, stand, 0.06, 0.24, 0.06, mx, DESK_TOP + 0.13, mz);
-    const panel = box(holder, white, 0.86, 0.56, 0.035, mx, DESK_TOP + 0.53, mz);
+    box(holder, bezel, 0.34, 0.02, 0.2, mx, DESK_TOP + 0.01, mz);
+    box(holder, bezel, 0.06, 0.24, 0.06, mx, DESK_TOP + 0.13, mz);
+    const panel = box(holder, bezel, 0.86, 0.56, 0.035, mx, DESK_TOP + 0.53, mz);
     panel.rotation.x = -0.05;
+    // The screen sits proud of the case on the +z face, which is the side the
+    // camera is on, leaving the black surround visible as a border.
+    const screen = box(holder, glass, 0.78, 0.47, 0.01, mx, DESK_TOP + 0.53, mz + 0.024);
+    screen.rotation.x = -0.05;
   }
 
   // ---------- shelving ----------
