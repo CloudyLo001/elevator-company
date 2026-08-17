@@ -66,6 +66,12 @@ const ZOOM_MAX = 1.65;
 
 type ViewMode = "front" | "third" | "cctv" | "shaft";
 
+/** Fold `v` back into `[lo, lo + size)`, however far outside it has drifted. */
+function wrap(v: number, lo: number, size: number): number {
+  const t = ((((v - lo) % size) + size) % size);
+  return lo + t;
+}
+
 function smoothstep(u: number): number {
   const c = THREE.MathUtils.clamp(u, 0, 1);
   return c * c * (3 - 2 * c);
@@ -113,6 +119,9 @@ export class App {
   private prCeiling = 0;
   /** Whether the last change was a step up, so a step down can blame it. */
   private prTriedUp = false;
+  // Scratch for the weather volumes' camera tracking.
+  private weatherShift = new THREE.Vector3();
+  private weatherTarget = new THREE.Vector3();
   /** Which land theme is currently painted, so the sky is only repainted on
    *  an actual change rather than every frame. */
   private landThemeKey: TimeKey | null = null;
@@ -809,21 +818,72 @@ export class App {
   }
 
   /** Advance falling rain, wrapping each streak back to the top. */
+  /**
+   * Move a weather volume so it stays around the camera.
+   *
+   * The box is small next to the finale's world, so parked at the origin it
+   * only ever filled a band through the middle of a wide shot. Carrying it with
+   * the camera keeps the fall edge to edge without needing a volume the size of
+   * the landscape.
+   *
+   * Particles are stored in the volume's local space, so shifting the volume
+   * would drag them along with it and the fall would look pinned to the camera.
+   * Subtracting the same delta from every particle cancels that out: they hold
+   * their world positions, and only wrap once they fall out the far side.
+   *
+   * Returns the per-axis shift, for the caller to apply while it walks the
+   * particles it is already walking.
+   */
+  private followWeather(mesh: THREE.Object3D, height: number): THREE.Vector3 {
+    const d = this.weatherShift;
+    // Only during the finale. At the rooftop stop the camera is still inside
+    // the car, and a volume centred there would put rain inside it.
+    const track = this.lastState !== null && this.lastState.finale > 0.25;
+    this.weatherTarget.set(
+      track ? this.camera.position.x : 0,
+      track ? this.camera.position.y - height / 2 : 0,
+      track ? this.camera.position.z : 0,
+    );
+    d.subVectors(this.weatherTarget, mesh.position);
+    mesh.position.copy(this.weatherTarget);
+    return d;
+  }
+
   private fallRain(rain: THREE.LineSegments, dt: number): void {
     const pos = rain.geometry.getAttribute("position") as THREE.BufferAttribute;
-    const { speeds, height } = rain.userData as {
+    const { speeds, height, spread } = rain.userData as {
       speeds: Float32Array;
       height: number;
+      spread: number;
     };
+    const shift = this.followWeather(rain, height);
     const arr = pos.array as Float32Array;
+    const half = spread / 2;
     for (let i = 0; i < speeds.length; i++) {
       const drop = speeds[i] * dt;
-      arr[i * 6 + 1] -= drop;
-      arr[i * 6 + 4] -= drop;
-      if (arr[i * 6 + 4] < 0) {
-        const len = arr[i * 6 + 1] - arr[i * 6 + 4];
-        arr[i * 6 + 1] = height;
-        arr[i * 6 + 4] = height - len;
+      const a = i * 6;
+      arr[a] -= shift.x;
+      arr[a + 3] -= shift.x;
+      arr[a + 2] -= shift.z;
+      arr[a + 5] -= shift.z;
+      arr[a + 1] -= drop + shift.y;
+      arr[a + 4] -= drop + shift.y;
+      // Wrap sideways so the column refills as the camera travels.
+      if (arr[a] < -half || arr[a] > half) {
+        const w = wrap(arr[a], -half, spread) - arr[a];
+        arr[a] += w;
+        arr[a + 3] += w;
+      }
+      if (arr[a + 2] < -half || arr[a + 2] > half) {
+        const w = wrap(arr[a + 2], -half, spread) - arr[a + 2];
+        arr[a + 2] += w;
+        arr[a + 5] += w;
+      }
+      if (arr[a + 4] < 0 || arr[a + 1] > height) {
+        const len = arr[a + 1] - arr[a + 4];
+        const top = wrap(arr[a + 1], 0, height);
+        arr[a + 1] = top;
+        arr[a + 4] = top - len;
       }
     }
     pos.needsUpdate = true;
@@ -832,17 +892,26 @@ export class App {
   /** Advance drifting snow, wrapping each flake back to the top. */
   private fallSnow(snow: THREE.Points, dt: number): void {
     const pos = snow.geometry.getAttribute("position") as THREE.BufferAttribute;
-    const { speeds, drift, height } = snow.userData as {
+    const { speeds, drift, height, spread } = snow.userData as {
       speeds: Float32Array;
       drift: Float32Array;
       height: number;
+      spread: number;
     };
+    const shift = this.followWeather(snow, height);
     const arr = pos.array as Float32Array;
+    const half = spread / 2;
     for (let i = 0; i < speeds.length; i++) {
-      arr[i * 3 + 1] -= speeds[i] * dt;
+      const a = i * 3;
       drift[i] += dt * 0.8;
-      arr[i * 3] += Math.sin(drift[i]) * dt * 2.2;
-      if (arr[i * 3 + 1] < 0) arr[i * 3 + 1] = height;
+      arr[a] += Math.sin(drift[i]) * dt * 2.2 - shift.x;
+      arr[a + 1] -= speeds[i] * dt + shift.y;
+      arr[a + 2] -= shift.z;
+      if (arr[a] < -half || arr[a] > half) arr[a] = wrap(arr[a], -half, spread);
+      if (arr[a + 2] < -half || arr[a + 2] > half)
+        arr[a + 2] = wrap(arr[a + 2], -half, spread);
+      if (arr[a + 1] < 0 || arr[a + 1] > height)
+        arr[a + 1] = wrap(arr[a + 1], 0, height);
     }
     pos.needsUpdate = true;
   }

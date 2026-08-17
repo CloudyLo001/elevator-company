@@ -133,7 +133,10 @@ function makeSnow(count: number, spread: number, height: number): THREE.Points {
     geo,
     new THREE.PointsMaterial({
       color: 0xf4f6f8,
-      size: 1.5,
+      // Small on purpose. The volume now travels with the camera, so flakes
+      // pass close to the lens where size attenuation blows them up; at 1.5
+      // the overdraw from those near flakes alone cost about ten frames.
+      size: 0.7,
       transparent: true,
       opacity: 0,
       depthWrite: false,
@@ -1124,8 +1127,11 @@ export function buildWorld(assets: AssetMap): World {
   buildLine.visible = false;
   scene.add(buildLine);
 
-  const rain = makeRain(1400, 300, 340);
-  const snow = makeSnow(1600, 300, 340);
+  // Sized to travel with the camera during the finale rather than to sit over
+  // the tower, so the fall reaches the edges of the frame however far the
+  // camera pulls back. Counts are up with the volume to hold the density.
+  const rain = makeRain(6000, 660, 660);
+  const snow = makeSnow(5000, 660, 660);
   rain.visible = false;
   snow.visible = false;
   scene.add(rain, snow);
